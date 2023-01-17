@@ -26,7 +26,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>3</number>
    </property>
    <widget class="QWidget" name="page_2">
     <widget class="QPushButton" name="btn_login">
@@ -803,7 +803,7 @@
      <property name="geometry">
       <rect>
        <x>880</x>
-       <y>740</y>
+       <y>770</y>
        <width>75</width>
        <height>23</height>
       </rect>
@@ -823,6 +823,16 @@
      </property>
      <property name="text">
       <string>home</string>
+     </property>
+    </widget>
+    <widget class="QTableWidget" name="stock_tableWidget">
+     <property name="geometry">
+      <rect>
+       <x>55</x>
+       <y>471</y>
+       <width>881</width>
+       <height>271</height>
+      </rect>
      </property>
     </widget>
    </widget>
