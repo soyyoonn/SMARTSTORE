@@ -26,7 +26,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>3</number>
+    <number>4</number>
    </property>
    <widget class="QWidget" name="page_2">
     <widget class="QPushButton" name="btn_login">
@@ -749,184 +749,13 @@
       </property>
      </column>
     </widget>
-    <widget class="QLabel" name="label_15">
-     <property name="geometry">
-      <rect>
-       <x>600</x>
-       <y>310</y>
-       <width>61</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>순 재료가</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="productname">
-     <property name="geometry">
-      <rect>
-       <x>175</x>
-       <y>104</y>
-       <width>191</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-     <property name="placeholderText">
-      <string>등록하실 상품명을 적어주세요</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="btn_registration">
-     <property name="geometry">
-      <rect>
-       <x>755</x>
-       <y>365</y>
-       <width>75</width>
-       <height>23</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>상품등록</string>
-     </property>
-    </widget>
-    <widget class="QListWidget" name="list_material">
-     <property name="geometry">
-      <rect>
-       <x>175</x>
-       <y>140</y>
-       <width>256</width>
-       <height>161</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="btn_productInput">
-     <property name="geometry">
-      <rect>
-       <x>465</x>
-       <y>200</y>
-       <width>75</width>
-       <height>23</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>넣기</string>
-     </property>
-    </widget>
-    <widget class="QTableWidget" name="table_material">
-     <property name="geometry">
-      <rect>
-       <x>575</x>
-       <y>140</y>
-       <width>256</width>
-       <height>161</height>
-      </rect>
-     </property>
-     <column>
-      <property name="text">
-       <string>사용재료</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>들어가는양</string>
-      </property>
-     </column>
-    </widget>
-    <widget class="QLineEdit" name="led_productWeight">
-     <property name="geometry">
-      <rect>
-       <x>465</x>
-       <y>170</y>
-       <width>75</width>
-       <height>23</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="btn_productOutput">
-     <property name="geometry">
-      <rect>
-       <x>465</x>
-       <y>230</y>
-       <width>75</width>
-       <height>23</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>빼기</string>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="product_sellingPrice">
-     <property name="geometry">
-      <rect>
-       <x>665</x>
-       <y>335</y>
-       <width>161</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="placeholderText">
-      <string>판매하실 금액을 적어주세요</string>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="product_price">
-     <property name="geometry">
-      <rect>
-       <x>665</x>
-       <y>310</y>
-       <width>161</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="mouseTracking">
-      <bool>false</bool>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_16">
-     <property name="geometry">
-      <rect>
-       <x>600</x>
-       <y>335</y>
-       <width>61</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>판매가</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_17">
-     <property name="geometry">
-      <rect>
-       <x>75</x>
-       <y>45</y>
-       <width>151</width>
-       <height>41</height>
-      </rect>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">font: 22pt &quot;GyeonggiBatang&quot;;
-</string>
-     </property>
-     <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:22pt;&quot;&gt;상품등록
-&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-    </widget>
    </widget>
    <widget class="QWidget" name="page_5">
     <widget class="QLabel" name="label_3">
      <property name="geometry">
       <rect>
        <x>70</x>
-       <y>70</y>
+       <y>400</y>
        <width>56</width>
        <height>20</height>
       </rect>
@@ -939,7 +768,7 @@
      <property name="geometry">
       <rect>
        <x>60</x>
-       <y>111</y>
+       <y>441</y>
        <width>891</width>
        <height>321</height>
       </rect>
@@ -964,7 +793,7 @@
      <property name="geometry">
       <rect>
        <x>880</x>
-       <y>460</y>
+       <y>790</y>
        <width>75</width>
        <height>23</height>
       </rect>
@@ -984,6 +813,296 @@
      </property>
      <property name="text">
       <string>home</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="productname">
+     <property name="geometry">
+      <rect>
+       <x>610</x>
+       <y>370</y>
+       <width>181</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="placeholderText">
+      <string>등록하실 상품명을 적어주세요</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="product_sellingPrice">
+     <property name="geometry">
+      <rect>
+       <x>610</x>
+       <y>345</y>
+       <width>181</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="placeholderText">
+      <string>판매하실 금액을 적어주세요</string>
+     </property>
+    </widget>
+    <widget class="QListWidget" name="list_material">
+     <property name="geometry">
+      <rect>
+       <x>140</x>
+       <y>145</y>
+       <width>191</width>
+       <height>161</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_21">
+     <property name="geometry">
+      <rect>
+       <x>350</x>
+       <y>150</y>
+       <width>71</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>선택 재료</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label">
+     <property name="geometry">
+      <rect>
+       <x>460</x>
+       <y>120</y>
+       <width>71</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>레시피</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btn_productInput">
+     <property name="geometry">
+      <rect>
+       <x>350</x>
+       <y>250</y>
+       <width>75</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>넣기</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_18">
+     <property name="geometry">
+      <rect>
+       <x>540</x>
+       <y>370</y>
+       <width>61</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>상품명</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="led_materialWeight">
+     <property name="geometry">
+      <rect>
+       <x>350</x>
+       <y>220</y>
+       <width>75</width>
+       <height>20</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btn_productOutput">
+     <property name="geometry">
+      <rect>
+       <x>350</x>
+       <y>280</y>
+       <width>75</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>빼기</string>
+     </property>
+    </widget>
+    <widget class="QTableWidget" name="table_recipe">
+     <property name="geometry">
+      <rect>
+       <x>455</x>
+       <y>145</y>
+       <width>341</width>
+       <height>161</height>
+      </rect>
+     </property>
+     <property name="editTriggers">
+      <set>QAbstractItemView::NoEditTriggers</set>
+     </property>
+     <property name="tabKeyNavigation">
+      <bool>false</bool>
+     </property>
+     <property name="showDropIndicator" stdset="0">
+      <bool>false</bool>
+     </property>
+     <property name="selectionBehavior">
+      <enum>QAbstractItemView::SelectRows</enum>
+     </property>
+     <column>
+      <property name="text">
+       <string>사용재료</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>무게(g)</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>재료당가격</string>
+      </property>
+     </column>
+    </widget>
+    <widget class="QPushButton" name="btn_registration">
+     <property name="geometry">
+      <rect>
+       <x>800</x>
+       <y>370</y>
+       <width>75</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>상품등록</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_16">
+     <property name="geometry">
+      <rect>
+       <x>540</x>
+       <y>345</y>
+       <width>61</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>판매가</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_15">
+     <property name="geometry">
+      <rect>
+       <x>610</x>
+       <y>320</y>
+       <width>71</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>순 재료가</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_19">
+     <property name="geometry">
+      <rect>
+       <x>140</x>
+       <y>120</y>
+       <width>71</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>재료 목록</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="product_price">
+     <property name="geometry">
+      <rect>
+       <x>690</x>
+       <y>320</y>
+       <width>101</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="mouseTracking">
+      <bool>false</bool>
+     </property>
+     <property name="text">
+      <string>0</string>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="led_materialChoose">
+     <property name="geometry">
+      <rect>
+       <x>350</x>
+       <y>173</y>
+       <width>75</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="mouseTracking">
+      <bool>false</bool>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_17">
+     <property name="geometry">
+      <rect>
+       <x>70</x>
+       <y>60</y>
+       <width>151</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">font: 22pt &quot;GyeonggiBatang&quot;;
+</string>
+     </property>
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:22pt;&quot;&gt;상품등록
+&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_20">
+     <property name="geometry">
+      <rect>
+       <x>350</x>
+       <y>200</y>
+       <width>71</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>무게(g)</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
      </property>
     </widget>
    </widget>
