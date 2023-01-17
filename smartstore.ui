@@ -834,6 +834,26 @@
        <height>271</height>
       </rect>
      </property>
+     <column>
+      <property name="text">
+       <string>metarial_name</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>material_code</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>total_amount</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>unit_price</string>
+      </property>
+     </column>
     </widget>
    </widget>
    <widget class="QWidget" name="page_5">
