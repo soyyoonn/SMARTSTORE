@@ -1,12 +1,13 @@
 import datetime
+import time
+
 import pymysql
 import sys
 from PyQt5.QtWidgets import *
 from PyQt5 import uic
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import *
-from datetime import *
-from datetime import datetime
+import datetime
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib import font_manager, rc
@@ -17,7 +18,7 @@ font = font_manager.FontProperties(fname=font_path).get_name()
 # 폰트 설정
 rc('font', family=font)
 
-class inventory_renew_alarm(QThread):
+class shortageAlarm(QThread):
     # 매개변수로 스레드가 선언되는 클래스에서 inventory_renew_alarm(self)라고 하여 상위 클래스를 부모로 지정
     def __init__(self, parent):
         super().__init__()
@@ -26,6 +27,8 @@ class inventory_renew_alarm(QThread):
     def run(self):
         while True:
             # MySQL에서 import 해오기
+            print('쓰레드')
+            time.sleep(1)
             conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000',
                                    db='malatang')
             a = conn.cursor()
@@ -34,16 +37,16 @@ class inventory_renew_alarm(QThread):
             a.execute(sql)
             amount_1 = a.fetchall()  # 1인분 ((재료명, 수량))
             list = []  # 빈 리스트 생성, 만들 수 있는 양 넣어줄 예정
-            print(amount_1)
             for i in range(len(amount_1)):
                 sql1 = f"SELECT total_amount FROM inventory where material_name = '{amount_1[i][0]}'"  # 재료명
                 a.execute(sql1)
-                stock_info = a.fetchall()   #((수량,),)
-                print(stock_info)
-                if stock_info[i][0] < amount_1[i][1]:
+                stock_info = a.fetchall()   # ((수량,),)
+                if int(stock_info[0][0]) < int(amount_1[i][1]):
                     list.append(amount_1[i][0])
                     self.parent.thread_label.setText(f"{list} 재고 부족")
-
+                    time.sleep(2)
+                else:
+                    self.parent.thread_label.setText('')
 
 
 form_widget = uic.loadUiType('smartstore.ui')[0]
@@ -52,25 +55,30 @@ class Search(QWidget, form_widget):
         super().__init__()
         self.setupUi(self)
         # 쓰레드
-        self.ira = inventory_renew_alarm(self)
+        self.ira = shortageAlarm(self)
         self.ira.start()
 
+        self.stackedWidget.setCurrentIndex(0)
         self.btn_product.clicked.connect(self.goStock)  # 홈페이지 - 상품등록버튼
-        self.btn_home3.clicked.connect(self.goStock)    # 상품등록페이지 - 홈버튼
+        self.btn_home3.clicked.connect(self.goHome)    # 상품등록페이지 - 홈버튼
 
+        # tableWidget 열 넓이 조정
         self.stock_tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-
+        self.orderlist.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         # 실험용
-        # self.showStock_table()
+        self.showStock_table()
         # self.comboboxSetting()
         # self.minusStock()
         self.canMake()
+        self.showOrderlist()
+        self.order()
 
     def goHome(self):
         self.stackedWidget.setCurrentIndex(0)
     def goStock(self):
         self.stackedWidget.setCurrentIndex(3)
 
+# 미사용중
     def comboboxSetting(self):
         # MySQL에서 import 해오기
         conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000',
@@ -104,6 +112,7 @@ class Search(QWidget, form_widget):
         m_price = self.material7.currentText()
         self.stock7.setText(m_price)
 
+# 재고관리
     def showStock_table(self):
         # MySQL에서 import 해오기
         conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000',
@@ -163,10 +172,54 @@ class Search(QWidget, form_widget):
             list.append(stock_info)
         cancook = min(list)   #최솟값 만큼 만들 수 있다!
 
-    def shortageAlarm(self):
-        pass
+# 주문관리
+    def showOrderlist(self):
+        # MySQL에서 import 해오기
+        conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000',
+                               db='malatang')
+        a = conn.cursor()
+        # 재고 정보 모두 불러오기
+        sql = f"SELECT account_name, order_code, order_state FROM order_info"
+        a.execute(sql)
+        stock_info = a.fetchall()
+        # ((고객, 주문 번호, 주문 상태))
+        row = 0
+        self.orderlist.setRowCount(len(stock_info))
+        for i in stock_info:
+            self.orderlist.setItem(row, 0, QTableWidgetItem(str(i[0])))
+            self.orderlist.setItem(row, 1, QTableWidgetItem(str(i[1])))  # type = int
+            self.orderlist.setItem(row, 2, QTableWidgetItem(str(i[2])))
+            row += 1
 
+        # 테이블 위젯 클릭 하면 주문정보 보이게 하기
 
+        sql1 = f"SELECT product_name, product_quantity FROM order_info"
+        a.execute(sql1)
+        bill_info = a.fetchall()
+        row1 = 0
+        self.bill_tableWidget.setRowCount(len(bill_info))
+        for i in stock_info:
+            self.bill_tableWidget.setItem(row, 0, QTableWidgetItem(str(i[0])))
+            self.bill_tableWidget.setItem(row, 1, QTableWidgetItem(str(i[1])))  # type = int
+            row1 += 1
+    def order(self):
+        # MySQL에서 import 해오기
+        conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000',
+                               db='malatang')
+        a = conn.cursor()
+        # 재고 정보 모두 불러오기
+        sql = f"select distinct order_code from order_info where order_state = '준비중'"
+        a.execute(sql)
+        order_check = a.fetchall()
+        print(order_check)
+        ordercode_list=[]
+        for x in order_check:
+            ordercode_list.append(x[0])
+        for i in ordercode_list:
+            sql1 = f"select * from order_info where order_code = {i}"
+            a.execute(sql1)
+            order_check1 = a.fetchall()
+            print(order_check1)
 
 if __name__ == "__main__":
 

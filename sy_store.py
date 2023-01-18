@@ -1,11 +1,14 @@
 import pymysql
 import sys
+import time
+import random
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5 import uic
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox
+import threading
 
 form_class = uic.loadUiType("smartstore.ui")[0]
 
@@ -29,23 +32,24 @@ class smartstore(QMainWindow,form_class):
         self.onlyInt = QIntValidator()
         self.phone.setValidator(self.onlyInt)   # 연락처 값 숫자로만 입력받기
         self.joinid.textChanged.connect(self.double_change)   # 중복체크 하고 아이디 바꿀 시 다시 중복체크 하기
-        self.cstable.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch) # 테이블 위젯 헤더 조절
-        self.btn_cs.clicked.connect(self.move_cs)
-        self.btn_check3.clicked.connect(self.cslist)
-        self.btn_answer.clicked.connect(self.check_answer)
+        self.cstable.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch) # 문의관리 테이블 위젯 헤더 조절
+        self.btn_cs.clicked.connect(self.move_cs) # 문의관리 페이지로 이동
+        self.btn_check3.clicked.connect(self.cslist) # 문의 내역을 보여준다
+        self.btn_answer.clicked.connect(self.check_answer) # 답변 등록 완료 실행
+        self.btn_test.clicked.connect(self.testqna)
 
-
+    # 메인 페이지로 이동
     def move_main(self):
         self.stackedWidget.setCurrentIndex(0)
 
-
+    # 로그인 페이지로 이동
     def move_login(self):
         self.stackedWidget.setCurrentIndex(1)
         self.clear_check()
         if self.log_check == True:
             self.logout()
 
-
+    # 회원가입 페이지로 이동
     def move_signup(self):
         self.stackedWidget.setCurrentIndex(2)
         self.joinid.clear()
@@ -55,6 +59,7 @@ class smartstore(QMainWindow,form_class):
         self.phone.clear()
         self.address.clear()
 
+    # 문의관리 페이지로 이동
     def move_cs(self):
         # if self.log_check == False:
         #     QMessageBox.information(self, '알림', '로그인을 해주세요')
@@ -63,12 +68,12 @@ class smartstore(QMainWindow,form_class):
         # elif self.log_check == True:
         self.stackedWidget.setCurrentIndex(5)
 
-
+    # 아이디, 비밀번호 클리어
     def clear_check(self):
         self.id.clear()
         self.pw.clear()
 
-
+    # 로그인 실행
     def login(self):
         id = self.id.text()
         pw = self.pw.text()
@@ -91,15 +96,16 @@ class smartstore(QMainWindow,form_class):
             self.btn_login.setText('로그아웃')  # 로그인 버튼 텍스트 로그아웃으로 변경
             self.move_main()
 
+    # 로그아웃 실행
     def logout(self):
         QMessageBox.information(self, '알림', f'{self.log[0][1]}님 로그아웃 되었습니다')
         self.log_check = False
         self.btn_login.setText('로그인')  # 로그아웃 버튼 텍스트 로그인으로 변경
         self.move_main()
 
-
-    def double_Check(self):         # 회원가입 아이디 중복 확인하는 함수
-        id = self.joinid.text()  # id에 입력되는 텍스트
+    # 회원가입 아이디 중복 확인
+    def double_Check(self):
+        id = self.joinid.text()  # 아이디에 입력되는 텍스트
         conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000', db='malatang',
                                charset='utf8')
         cursor = conn.cursor()
@@ -113,33 +119,35 @@ class smartstore(QMainWindow,form_class):
             self.checkStatus = True
             self.id.textChanged.connect(self.move_signup)
 
+    # 아이디 중복 체크
     def double_change(self):
         self.checkStatus = False
 
-    def join(self):  # 회원가입 실행 함수
-        joinid = self.joinid.text()  # lineEdit에 입력받은 데이터
-        joinpw = self.joinpw.text()
-        joinpw2 = self.joinpw2.text()
-        self.name = self.name.text()
-        phone = self.phone.text()
-        address = self.address.text()
+    # 회원가입 실행
+    def join(self):
+        joinid = self.joinid.text()  # 아이디
+        joinpw = self.joinpw.text()  # 비밀번호
+        joinpw2 = self.joinpw2.text()  # 비밀번호 확인
+        name = self.name.text()  # 이름
+        phone = self.phone.text()  # 연락처
+        address = self.address.text()  # 주소
         # 회원가입 시 필요한 조건
-        if joinpw != joinpw2:
+        if joinpw != joinpw2: # 입력된 비밀번호가 다를 때
             QMessageBox.critical(self, "알림", "비밀번호가 일치하지 않습니다. 다시 확인해주세요")
-        elif self.checkStatus == False:
+        elif self.checkStatus == False: # 아이디 중복 확인 안했을때
             QMessageBox.critical(self, "알림", "아이디 중복 확인을 해주세요")
-        elif joinid == '' or joinpw == '' or self.name == '' or phone == '' or address == '':
+        elif joinid == '' or joinpw == '' or name == '' or phone == '' or address == '':  # 입력 되지 않은 정보가 있을때
             QMessageBox.critical(self, "알림", "정보를 입력하세요")
         else:
             conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000', db='malatang',
                                    charset='utf8')
             cursor = conn.cursor()
             cursor.execute(
-                f"INSERT INTO account_info (account_name, account_id, account_pw) VALUES('{self.name}','{joinid}','{joinpw}')")
+                f"INSERT INTO account_info (account_name, account_id, account_pw) VALUES('{name}','{joinid}','{joinpw}')")
             conn.commit()
             conn.close()
             QMessageBox.information(self, "알림", "회원가입 완료")
-            # 입력된 값 클리어 해주기
+            # 회원가입에 입력된 정보 클리어 해주기
             self.joinid.clear()
             self.joinpw.clear()
             self.joinpw2.clear()
@@ -148,61 +156,57 @@ class smartstore(QMainWindow,form_class):
             self.address.clear()
             self.stackedWidget.setCurrentIndex(1)
 
+    # 문의관리 내역 보여주는 메서드
     def cslist(self):
         conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000', db='malatang',
                                charset='utf8')
         cursor = conn.cursor()
-        cursor.execute(f"SELECT * FROM customerservice")
-        # cursor.execute(f"SELECT * FROM customerservice WHERE account_name = '{self.name}'")
+        cursor.execute(f"SELECT * FROM customerservice WHERE division = '고객'") # 구분이 고객인 정보만 불러온다
         self.cs = cursor.fetchall()
-        print(self.cs)
         conn.close()
         for i in range(len(self.cs)):
             print(self.cs[i])
         self.cstable.setRowCount(len(self.cs))
 
         Row = 0
-        # self.cstable.setRowCount(len(self.cs))
         for i in self.cs:
             self.cstable.setItem(Row, 0, QTableWidgetItem(str(i[0])))  # 날짜
-            self.cstable.setItem(Row, 1, QTableWidgetItem(i[2]))  # 고객이름
-            self.cstable.setItem(Row, 2, QTableWidgetItem(i[3]))  # 주문번호
-            self.cstable.setItem(Row, 3, QTableWidgetItem(i[5]))  # 상품이름
-            self.cstable.setItem(Row, 4, QTableWidgetItem(i[6]))  # 문의내용
-            self.cstable.setItem(Row, 5, QTableWidgetItem(i[7]))  # 답변
+            self.cstable.setItem(Row, 1, QTableWidgetItem(i[3]))  # 고객이름
+            self.cstable.setItem(Row, 2, QTableWidgetItem(i[4]))  # 주문번호
+            self.cstable.setItem(Row, 3, QTableWidgetItem(i[6]))  # 상품이름
+            self.cstable.setItem(Row, 4, QTableWidgetItem(i[7]))  # 문의내용
+            self.cstable.setItem(Row, 5, QTableWidgetItem(i[8]))  # 답변
             Row += 1
 
+    # 답변 완료 시 실행되는 메서드
     def check_answer(self):
         # 선택된 셀이 없을 경우
-        if self.cstable.currentRow()== -1:
+        if self.cstable.currentRow() == -1:
             QMessageBox.information(self, '알림', '선택된 값이 없습니다.')
             return
-        self.data = self.cs[self.cstable.currentRow()]  # 테이블 위젯의 result 값을 data에 저장
+        self.data = self.cs[self.cstable.currentRow()]  # 테이블 위젯의 값을 data에 저장
         print(self.data)
         self.row = self.cstable.selectedItems()        # 테이블 위젯의 항목 리스트 형식으로 반환된 값을 row에 저장
         print(self.row)
-        print(str(self.row[0]))
-        self.date = self.row[0].text()  # 날짜
+        self.date = self.row[0].text()   # 날짜
         self.account_name = self.row[1].text()  # 고객이름
         self.order_code = self.row[2].text()  # 주문번호
         self.product_name = self.row[3].text()  # 상품이름
         self.question = self.row[4].text()  # 문의내용
         self.answer = self.row[5].text()  # 답변
         print(self.date)
-        if self.data[0] != self.date or self.data[2] != self.order_code:
-                QMessageBox.information(self, '알림', '날짜와 주문번호는 수정 할 수 없습니다.')
-                self.search()
-                return
-        # 수정된 값이 없을 경우
-        elif self.data[4:-1] == (int(self.new_cases),int(self.cumulative_cases),int(self.new_deaths),int(self.cumulative_deaths)):
-            QMessageBox.information(self, '수정', '수정된 값이 없습니다.')
+        print(self.account_name)
+        print(self.order_code)
+        print(self.product_name)
+        print(self.question)
+        print(self.answer)
+        ck_chage = QMessageBox.question(self, '알림', '답변을 작성하겠습니까?', QMessageBox.Yes | QMessageBox.No, )
+        if ck_chage == QMessageBox.Yes:
+            self.customer_answer()
         else:
-            ck_chage = QMessageBox.question(self, '수정', '수정 하시겠습니까?', QMessageBox.Yes | QMessageBox.No, )
-            if ck_chage == QMessageBox.Yes:
-                self.customer_answer()
-            else: return
+            return
 
-    # 수정값 데이터 업로드 및 수정완료 메시지 박스
+    # 답변 데이터 업로드 및 답변완료 메시지 박스
     def customer_answer(self):
         try:
             self.cstable.setEditTriggers(QAbstractItemView.AllEditTriggers)    # 테이블 위젯 수정 가능하게 변경
@@ -210,13 +214,62 @@ class smartstore(QMainWindow,form_class):
             conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000', db='malatang',
                                    charset='utf8')
             cursor = conn.cursor()
-            cursor.execute(
-                f"UPDATE customerservice SET 답변='{self.answer}'")
-                # f"where account_name='{self.name}'")
+            cursor.execute(f"UPDATE customerservice SET answer='{self.answer}' WHERE order_code='{self.order_code}'")
             conn.commit()
             conn.close()
-            QMessageBox.information(self, '알림', '답변 완료.')
+            QMessageBox.information(self, '알림', '답변이 등록됐습니다.')
         except: pass
+
+
+    def testqna(self):
+        self.th = thread_cs(self)
+        self.th.start()
+
+    # --------------------------------------------------------------------
+
+class thread_cs(threading.Thread):
+    def __init__(self, parent):
+        super().__init__()
+        self.parent = parent
+        print('1234')
+
+    def run(self):
+        while True:
+            # if self.parent.quit or self.parent.test_th:
+            #     print('쓰레드 종료')
+            #     self.parent.qnalabel.setText('')
+            #     return
+            time.sleep(3)
+            print('123456789')
+            # n = random.randint(1,10)
+            conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000', db='malatang',
+                                   charset='utf8')
+            cursor = conn.cursor()
+            cursor.execute(f"SELECT * FROM customerservice ORDER BY RAND() LIMIT 1")
+            self.parent.testcslist = cursor.fetchall()
+            print(self.parent.testcslist)
+            conn.close()
+            for i in range(len(self.parent.testcslist)):
+                print(self.parent.testcslist[i])
+            self.cstable.setRowCount(len(self.parent.testcslist))
+
+            Row = 0
+            for i in self.parent.testcslist:
+                self.cstable.setItem(Row, 0, QTableWidgetItem(str(i[0])))  # 날짜
+                self.cstable.setItem(Row, 1, QTableWidgetItem(i[3]))  # 고객이름
+                self.cstable.setItem(Row, 2, QTableWidgetItem(i[4]))  # 주문번호
+                self.cstable.setItem(Row, 3, QTableWidgetItem(i[6]))  # 상품이름
+                self.cstable.setItem(Row, 4, QTableWidgetItem(i[7]))  # 문의내용
+                self.cstable.setItem(Row, 5, QTableWidgetItem(i[8]))  # 답변
+                Row += 1
+            if self.parent.testcslist != None:
+                self.parent.qnalabel.setText(f'새로운 문의가 왔습니다')
+                self.parent.qnalabel.show()
+                time.sleep(5)
+            if self.parent.testcslist == None:
+                self.parent.qnalabel.hide()
+            conn.commit()
+            conn.close()
 
 
 if __name__ == "__main__":
