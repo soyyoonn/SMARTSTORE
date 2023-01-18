@@ -711,6 +711,11 @@
      </column>
      <column>
       <property name="text">
+       <string>상품수량</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
        <string>주문상태</string>
       </property>
      </column>
