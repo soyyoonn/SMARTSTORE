@@ -4,6 +4,7 @@ import sys
 from PyQt5.QtWidgets import *
 from PyQt5 import uic
 from PyQt5 import QtWidgets
+from PyQt5.QtCore import *
 from datetime import *
 from datetime import datetime
 import matplotlib.pyplot as plt
@@ -16,11 +17,44 @@ font = font_manager.FontProperties(fname=font_path).get_name()
 # 폰트 설정
 rc('font', family=font)
 
+class inventory_renew_alarm(QThread):
+    # 매개변수로 스레드가 선언되는 클래스에서 inventory_renew_alarm(self)라고 하여 상위 클래스를 부모로 지정
+    def __init__(self, parent):
+        super().__init__()
+        self.parent = parent
+
+    def run(self):
+        while True:
+            # MySQL에서 import 해오기
+            conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000',
+                                   db='malatang')
+            a = conn.cursor()
+            # 레시피 테이블에서 상품명에 해당하는 재료, 수량(1인분) 가져움
+            sql = f"SELECT material_name, amount FROM recipe where product_name = '마라탕'"  # 주문 받은 상품명 넣을 예정
+            a.execute(sql)
+            amount_1 = a.fetchall()  # 1인분 ((재료명, 수량))
+            list = []  # 빈 리스트 생성, 만들 수 있는 양 넣어줄 예정
+            print(amount_1)
+            for i in range(len(amount_1)):
+                sql1 = f"SELECT total_amount FROM inventory where material_name = '{amount_1[i][0]}'"  # 재료명
+                a.execute(sql1)
+                stock_info = a.fetchall()   #((수량,),)
+                print(stock_info)
+                if stock_info[i][0] < amount_1[i][1]:
+                    list.append(amount_1[i][0])
+                    self.parent.thread_label.setText(f"{list} 재고 부족")
+
+
+
 form_widget = uic.loadUiType('smartstore.ui')[0]
 class Search(QWidget, form_widget):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
+        # 쓰레드
+        self.ira = inventory_renew_alarm(self)
+        self.ira.start()
+
         self.btn_product.clicked.connect(self.goStock)  # 홈페이지 - 상품등록버튼
         self.btn_home3.clicked.connect(self.goStock)    # 상품등록페이지 - 홈버튼
 
@@ -42,30 +76,40 @@ class Search(QWidget, form_widget):
         conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000',
                                db='malatang')
         a = conn.cursor()
+        # 재료이름 불러오기
         sql = f"SELECT material_name FROM inventory"
         a.execute(sql)
         material_info = a.fetchall()
         for i in material_info:
             self.material5.addItem(i[0])
-
+        # 1인분 양 불러오기
         sql1 = f"SELECT amount FROM recipe"
         a.execute(sql1)
         price_info = a.fetchall()
         for i in price_info:
             self.material6.addItem(str(i[0]))
-
+        # 단가 불러오기
         sql2 = f"SELECT unit_price FROM inventory"
         a.execute(sql2)
         price_info = a.fetchall()
         for i in price_info:
             self.material7.addItem(str(i[0]))
 
+    def selectMatarial(self):
+        # 콤보박스 값 라인에딧에 할당
+        m_name = self.material5.currentText()
+        self.stock5.setText(m_name)
+        m_amount = self.material6.currentText()
+        self.stock6.setText(m_amount)
+        m_price = self.material7.currentText()
+        self.stock7.setText(m_price)
 
     def showStock_table(self):
         # MySQL에서 import 해오기
         conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000',
                                db='malatang')
         a = conn.cursor()
+        # 재고 정보 모두 불러오기
         sql = f"SELECT * FROM inventory"
         a.execute(sql)
         stock_info = a.fetchall()
@@ -78,15 +122,6 @@ class Search(QWidget, form_widget):
             self.stock_tableWidget.setItem(row, 3, QTableWidgetItem(str(i[3])))     # type = decimal
             row += 1
 
-    def selectMatarial(self):
-        # 콤보박스 값 라인에딧에 할당
-        m_name = self.material5.currentText()
-        self.stock5.setText(m_name)
-        m_amount = self.material6.currentText()
-        self.stock6.setText(m_amount)
-        m_price = self.material7.currentText()
-        self.stock7.setText(m_price)
-
     def minusStock(self):
         # MySQL에서 import 해오기
         conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000',
@@ -96,35 +131,37 @@ class Search(QWidget, form_widget):
         sql = f"SELECT material_name, amount*3 FROM recipe where product_name = '마라탕'"
         a.execute(sql)
         outofstock = a.fetchall()   # 소진된 재고량 ((재료명, 수량*3))
+        # 인벤토리 테이블에 주문량 만큼 재고 차감
         for i in range(len(outofstock)):
-            # 인벤토리 테이블에 주문량 만큼 재고 차감
+            # 재료의 남아 있는 양 불러옴
             sql1 = f"SELECT total_amount FROM inventory where material_name = '{outofstock[i][0]}'" # 재료명
             a.execute(sql1)
-            stock_info = a.fetchall()
+            stock_info = a.fetchall()   # 현재 재고량
+            # 남은 재고량 = 현재 재고량 - 사용량
             remain_stock = int(stock_info[i][0]) - int(outofstock[i][1])
+            # 남은 재고량으로 업데이트
             sql2 = f"update inventory set total_amount = {remain_stock} where material_name = '{outofstock[i][0]}'"
             a.execute(sql2)
             conn.commit()
         self.showstock_table()
-
 
     def canMake(self):
         # MySQL에서 import 해오기
         conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000',
                                db='malatang')
         a = conn.cursor()
-        # 레시피 테이블에서 재료, 수량 가져움
-        sql = f"SELECT material_name, amount FROM recipe where product_name = '마라탕'"
+        # 레시피 테이블에서 상품명에 해당하는 재료, 수량 가져움
+        sql = f"SELECT material_name, amount FROM recipe where product_name = '마라탕'" # 주문 받은 상품명 넣을 예정
         a.execute(sql)
         amount_1 = a.fetchall()  # 1인분 ((재료명, 수량))
-        list = []
-        print(amount_1)
+        list = []   # 빈 리스트 생성, 만들 수 있는 양 넣어줄 예정
         for i in range(len(amount_1)):
+            # 만들 수 있는 양(필요한 재료 양) = 현재 재고량 / 1인분량 의 최솟값
             sql1 = f"SELECT round(total_amount/{int(amount_1[i][1])}, 0) FROM inventory where material_name = '{amount_1[i][0]}'"  # 재료명
             a.execute(sql1)
             stock_info = a.fetchall()
             list.append(stock_info)
-        min(list)   #최솟값 만큼 만들 수 있다!
+        cancook = min(list)   #최솟값 만큼 만들 수 있다!
 
     def shortageAlarm(self):
         pass
