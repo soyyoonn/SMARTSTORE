@@ -1,4 +1,3 @@
-import datetime
 import pymysql
 import sys
 
@@ -24,8 +23,6 @@ class Search(QWidget, form_widget):
         self.setupUi(self)
 
         # ---------------------- 상품등록 UI 세팅 ----------------------
-        # (임시) 위젯 인덱스 3번에서 바로 보이게 함
-        self.stackedWidget.setCurrentIndex(4)
         # 테이블 위젯의 헤더 정렬(헤더별 맞추기)
         self.table_recipe.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.table_BoM.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
