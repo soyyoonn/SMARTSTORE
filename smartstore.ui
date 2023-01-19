@@ -737,6 +737,12 @@
        <height>321</height>
       </rect>
      </property>
+     <property name="editTriggers">
+      <set>QAbstractItemView::NoEditTriggers</set>
+     </property>
+     <property name="selectionMode">
+      <enum>QAbstractItemView::SingleSelection</enum>
+     </property>
      <property name="selectionBehavior">
       <enum>QAbstractItemView::SelectRows</enum>
      </property>
@@ -790,6 +796,15 @@
        <width>256</width>
        <height>321</height>
       </rect>
+     </property>
+     <property name="editTriggers">
+      <set>QAbstractItemView::NoEditTriggers</set>
+     </property>
+     <property name="selectionMode">
+      <enum>QAbstractItemView::SingleSelection</enum>
+     </property>
+     <property name="selectionBehavior">
+      <enum>QAbstractItemView::SelectRows</enum>
      </property>
      <column>
       <property name="text">
@@ -1461,17 +1476,17 @@
     </widget>
    </widget>
   </widget>
-  <widget class="QPushButton" name="btn_qna">
+  <widget class="QLabel" name="qnalabel">
    <property name="geometry">
     <rect>
-     <x>760</x>
-     <y>860</y>
-     <width>271</width>
-     <height>111</height>
+     <x>720</x>
+     <y>861</y>
+     <width>281</width>
+     <height>101</height>
     </rect>
    </property>
    <property name="text">
-    <string>문의 알림</string>
+    <string>TextLabel</string>
    </property>
   </widget>
  </widget>
