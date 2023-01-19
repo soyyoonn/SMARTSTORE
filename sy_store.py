@@ -47,6 +47,7 @@ class smartstore(QMainWindow,form_class):
         self.btn_qna.hide()
         self.end = False
         self.cs = thread_cs(self)
+        self.testcslist = []
 
     # 메인 페이지로 이동
     def move_main(self):
@@ -80,7 +81,9 @@ class smartstore(QMainWindow,form_class):
 
     def move_testqna(self):
         self.stackedWidget.setCurrentIndex(5)
+        self.test_cstable()
         self.btn_qna.hide()
+
 
     def start_test(self):
         self.stackedWidget_2.setCurrentIndex(1)
@@ -286,10 +289,10 @@ class thread_cs(threading.Thread):
         super().__init__()
         self.parent = parent
         print('1234')
-        self.testcslist = []
 
     def run(self):
         while True:
+            print(type(self.parent.testcslist))
             if self.parent.end:
                 print('쓰레드 종료')
                 return
@@ -307,17 +310,18 @@ class thread_cs(threading.Thread):
                 self.parent.btn_qna.clicked.connect(self.parent.move_testqna)
                 self.test_cstable()
                 time.sleep(5)
+                print(list(testcslist[0]))
                 # self.parent.btn_qna.hide()
-                self.testcslist.append(testcslist[0])
+                self.parent.testcslist.append(list(testcslist[0]))
             conn.commit()
             conn.close()
 
     def test_cstable(self):
         # self.parent.cstable.clearContents()
-        self.parent.cstable.setRowCount(len(self.testcslist))
+        self.parent.cstable.setRowCount(len(self.parent.testcslist))
 
         Row = 0
-        for i in self.testcslist:
+        for i in self.parent.testcslist:
             self.parent.cstable.setItem(Row, 0, QTableWidgetItem(str(i[0])))  # 날짜
             self.parent.cstable.setItem(Row, 1, QTableWidgetItem(i[3]))  # 고객이름
             self.parent.cstable.setItem(Row, 2, QTableWidgetItem(i[4]))  # 주문번호
@@ -325,8 +329,6 @@ class thread_cs(threading.Thread):
             self.parent.cstable.setItem(Row, 4, QTableWidgetItem(i[7]))  # 문의내용
             self.parent.cstable.setItem(Row, 5, QTableWidgetItem(i[8]))  # 답변
             Row += 1
-
-
 
 
 if __name__ == "__main__":
