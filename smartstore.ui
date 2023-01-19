@@ -126,7 +126,7 @@
       </rect>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="page_7">
       <widget class="QPushButton" name="btn_end">

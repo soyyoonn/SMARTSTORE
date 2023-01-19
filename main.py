@@ -9,16 +9,72 @@ from PyQt5 import uic
 from PyQt5.QtCore import *
 from PyQt5.QtGui import QIntValidator
 
-from matplotlib import font_manager, rc
-# 한글 폰트 사용을 위해서 세팅, 폰트 경로 설정
-font_path = "C:\\Windows\\Fonts\\gulim.ttc"
-# 폰트 패스를 통해 폰트 세팅해 폰트 이름 반환받아 font 변수에 삽입
-font = font_manager.FontProperties(fname=font_path).get_name()
-# 폰트 설정
-rc('font', family=font)
 
 
 # ---------------------------------- 송화 ----------------------------------
+class orderAlarm(QThread):
+    def __init__(self, parent):
+        super().__init__()
+        self.parent = parent
+
+    def run(self):
+        while True:
+            time.sleep(5)
+            if self.parent.stackedWidget.currentIndex() == 3:
+                self.parent.orderAlarm_label.setText('')
+            elif self.parent.stackedWidget.currentIndex() != 3:
+                print(self.parent.stackedWidget.currentIndex())
+                self.parent.orderAlarm_label.setText('주문이 들어왔습니다')
+
+class Delivary(QThread):
+    def __init__(self, parent):
+        super().__init__()
+        self.parent = parent
+
+    def run(self):
+        item = self.parent.orderlist.selectedItems()
+        # MySQL에서 import 해오기
+        conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000',
+                               db='malatang')
+        a = conn.cursor()
+        # 레시피 테이블에서 상품명에 해당하는 재료, 수량(1인분) 가져움
+        sql2 = f"update order_info set order_state = '배송완료' where order_code = {(int(item[1].text()))}"
+
+        # 2초 뒤에 배송 완료로 바꿔주기
+        time.sleep(2)
+
+        a.execute(sql2)
+        conn.commit()
+        conn.close()
+        self.parent.showOrderlist()
+
+class orderRemind(QThread):
+    def __init__(self, parent):
+        super().__init__()
+        self.parent = parent
+
+    def run(self):
+        while True:
+            time.sleep(5)
+            # self.parent.orderAlarm_label.setText('주문이 들어왔습니다')
+
+            # MySQL에서 import 해오기
+            conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000',
+                                   db='malatang')
+            a = conn.cursor()
+            sql = f"SELECT distinct account_name, order_code, order_state FROM order_info where order_state = '준비중' ORDER BY RAND() LIMIT 1"
+            a.execute(sql)
+            live_order = a.fetchall()
+            self.parent.list.append(live_order)
+            row = 0
+            self.parent.orderlist.setRowCount(len(self.parent.list))
+            for i in self.parent.list:
+                self.parent.orderlist.setItem(row, 0, QTableWidgetItem(str(i[0][0])))
+                self.parent.orderlist.setItem(row, 1, QTableWidgetItem(str(i[0][1])))  # type = int
+                self.parent.orderlist.setItem(row, 2, QTableWidgetItem(str(i[0][2])))
+                row += 1
+
+
 class shortageAlarm(QThread):
     # 매개변수로 스레드가 선언되는 클래스에서 shortageAlarm(self)라고 하여 상위 클래스를 부모로 지정
     def __init__(self, parent):
@@ -33,21 +89,22 @@ class shortageAlarm(QThread):
             conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000',
                                    db='malatang')
             a = conn.cursor()
-            # 레시피 테이블에서 상품명에 해당하는 재료, 수량(1인분) 가져움
-            sql = f"SELECT material_name, amount FROM recipe where product_name = '마라탕'"  # 주문 받은 상품명 넣을 예정
-            a.execute(sql)
-            amount_1 = a.fetchall()  # 1인분 ((재료명, 수량))
             list = []  # 빈 리스트 생성, 만들 수 있는 양 넣어줄 예정
-            for i in range(len(amount_1)):
-                sql1 = f"SELECT total_amount FROM inventory where material_name = '{amount_1[i][0]}'"  # 재료명
-                a.execute(sql1)
-                stock_info = a.fetchall()   # ((수량,),)
-                if int(stock_info[0][0]) < int(amount_1[i][1]):
-                    list.append(amount_1[i][0])
-                    self.parent.thread_label.setText(f"{list} 재고 부족")
-                    time.sleep(2)
-                else:
-                    self.parent.thread_label.setText('')
+            for j in range(len(self.parent.bill_info)):
+                # 레시피 테이블에서 상품명에 해당하는 재료, 수량(1인분) 가져움
+                sql = f"SELECT material_name, amount FROM recipe where product_name = '{self.parent.bill_info[j][0]}'"  # 주문 받은 상품명 넣을 예정
+                a.execute(sql)
+                amount_1 = a.fetchall()  # 1인분 ((재료명, 수량))
+                for i in range(len(amount_1)):
+                    sql1 = f"SELECT total_amount FROM inventory where material_name = '{amount_1[i][0]}'"  # 재료명
+                    a.execute(sql1)
+                    stock_info = a.fetchall()   # ((수량,),)
+                    if int(stock_info[0][0]) < int(amount_1[i][1]):
+                        list.append(amount_1[i][0])
+                        self.parent.thread_label.setText(f"{list} 재고 부족")
+                        time.sleep(2)
+                    else:
+                        self.parent.thread_label.setText('')
 
 
 form_class = uic.loadUiType("smartstore.ui")[0]
@@ -58,47 +115,63 @@ class SmartStore(QMainWindow, form_class):
         super().__init__()
         self.setupUi(self)
         # ---------------------------------- 소윤 ----------------------------------
+        self.setupUi(self)
         self.stackedWidget.setCurrentIndex(0)
-        self.log_check = False   # 로그인 체크
+        self.stackedWidget_2.setCurrentIndex(1)
+        self.log_check = False  # 로그인 체크
         self.checkStatus = False  # 중복확인 체크
-        self.btn_home1.clicked.connect(self.move_main)   # 메인 페이지로 이동
+        self.btn_home1.clicked.connect(self.move_main)  # 메인 페이지로 이동
         self.btn_home2.clicked.connect(self.move_main)
         self.btn_home3.clicked.connect(self.move_main)
         self.btn_home4.clicked.connect(self.move_main)
         self.btn_home5.clicked.connect(self.move_main)
         self.btn_login.clicked.connect(self.move_login)  # 로그인 페이지로 이동
         self.signup_Button.clicked.connect(self.move_signup)  # 회원가입 페이지로 이동
-        self.login_Button.clicked.connect(self.login)   # 로그인 버튼 클릭 후 login 메서드 실행
-        self.btn_join.clicked.connect(self.join)        # 가입하기 버튼 클릭 후 join 메서드 실행
+        self.login_Button.clicked.connect(self.login)  # 로그인 버튼 클릭 후 login 메서드 실행
+        self.btn_join.clicked.connect(self.join)  # 가입하기 버튼 클릭 후 join 메서드 실행
         self.btn_duplication.clicked.connect(self.double_Check)  # 중복확인 버튼 클릭 후 double_Check 메서드 실행
         self.onlyInt = QIntValidator()
-        self.phone.setValidator(self.onlyInt)   # 연락처 값 숫자로만 입력받기
-        self.joinid.textChanged.connect(self.double_change)   # 중복체크 하고 아이디 바꿀 시 다시 중복체크 하기
-        self.cstable.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch) # 문의관리 테이블 위젯 헤더 조절
-        self.btn_cs.clicked.connect(self.move_cs) # 문의관리 페이지로 이동
-        self.btn_check3.clicked.connect(self.cslist) # 문의 내역을 보여준다
-        self.btn_answer.clicked.connect(self.check_answer) # 답변 등록 완료 실행
-        self.btn_test.clicked.connect(self.testqna)
+        self.phone.setValidator(self.onlyInt)  # 연락처 값 숫자로만 입력받기
+        self.joinid.textChanged.connect(self.double_change)  # 중복체크 하고 아이디 바꿀 시 다시 중복체크 하기
+        self.cstable.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)  # 문의관리 테이블 위젯 헤더 조절
+        self.btn_cs.clicked.connect(self.move_cs)  # 문의관리 페이지로 이동
+        self.btn_check3.clicked.connect(self.cslist)  # 문의 내역을 보여준다
+        self.btn_answer.clicked.connect(self.check_answer)  # 답변 등록 완료 실행
+        self.btn_test.clicked.connect(self.start_test)  # 테스트 버튼 누르면 스레드 시작
+        self.btn_end.clicked.connect(self.end_test)  # 종료 버튼 누르면 스레드 종료
+        self.btn_qna.clicked.connect(self.move_testqna)  # 문의 알림 온 버튼 누르면 페이지 이동
+        self.btn_qna.hide()  # 처음 실행 시 문의 알림 버튼 안보이게
+        self.end = False  # 스레드 종료 체크
+        self.thr_cs = thread_cs(self)
+
+        # 빈리스트 넣어주기
+        self.testcslist = []
 
         # ---------------------------------- 송화 ----------------------------------
-        # 쓰레드
-        self.ira = shortageAlarm(self)
-        self.ira.start()
+        self.list = []
 
+        # 쓰레드
+        self.oa = orderAlarm(self)
+        self.oa.start()
+
+        self.lo = orderRemind(self)
+        self.lo.start()
+
+        # 페이지 이동
         self.stackedWidget.setCurrentIndex(0)
         self.btn_order.clicked.connect(self.goStock)  # 홈페이지 - 주문관리버튼
         self.btn_home3.clicked.connect(self.goHome)  # 상품등록페이지 - 홈버튼
+
+        # 메서드 연결
+        self.orderlist.cellClicked.connect(self.showProduct)
+        self.btn_check2.clicked.connect(self.sendProduct)
+        # self.stackedWidget.currentChanged(int(3))   # 페이지 바뀌면 인덱스 번호 반환, 주문 알림시 필요
 
         # tableWidget 열 넓이 조정
         self.stock_tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.orderlist.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         # 실험용
         self.showStock_table()
-        # self.comboboxSetting()
-        # self.minusStock()
-        self.canMake()
-        self.showOrderlist()
-        self.order()
 
         # ---------------------------------- 연수 ----------------------------------
         self.btn_product.clicked.connect(lambda method_moveProductWidget: self.stackedWidget.setCurrentIndex(4))  # 홈페이지 - 상품등록버튼
@@ -167,12 +240,29 @@ class SmartStore(QMainWindow, form_class):
 
     # 문의관리 페이지로 이동
     def move_cs(self):
-        # if self.log_check == False:
-        #     QMessageBox.information(self, '알림', '로그인을 해주세요')
-        #     self.stackedWidget.setCurrentIndex(1)
-        #     self.clear_check()
-        # elif self.log_check == True:
+        if self.log_check == False:
+            QMessageBox.information(self, '알림', '로그인을 해주세요')
+            self.stackedWidget.setCurrentIndex(1)
+            self.clear_check()
+        elif self.log_check == True:
+            self.stackedWidget.setCurrentIndex(5)
+
+    def move_testqna(self):
         self.stackedWidget.setCurrentIndex(5)
+        self.btn_qna.hide()
+
+    # 테스트 버튼 누르면
+    def start_test(self):
+        # 종료 버튼으로 변경 된다
+        self.stackedWidget_2.setCurrentIndex(0)
+        # thread 시작
+        self.thr_cs.start()
+
+    # 종료 버튼 누르면
+    def end_test(self):
+        # 테스트 버튼으로 변경 된다
+        self.stackedWidget_2.setCurrentIndex(1)
+        self.end = True
 
     # 아이디, 비밀번호 클리어
     def clear_check(self):
@@ -183,11 +273,13 @@ class SmartStore(QMainWindow, form_class):
     def login(self):
         id = self.id.text()
         pw = self.pw.text()
-        if id == '' or pw == '': # 아이디나 비밀번호를 입력하지 않았을 때
+        if id == '' or pw == '':  # 아이디나 비밀번호를 입력하지 않았을 때
             QMessageBox.information(self, '알림', '모두 입력해주세요')
             return
         conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000', db='malatang',
                                charset='utf8')
+        # conn = pymysql.connect(host='localhost', port=3306, user='root', password='00000000', db='sy',
+        #                        charset='utf8')
         cursor = conn.cursor()
         cursor.execute(
             f"SELECT * FROM account_info WHERE account_id='{id}' AND account_pw='{pw}'")
@@ -214,6 +306,8 @@ class SmartStore(QMainWindow, form_class):
         id = self.joinid.text()  # 아이디에 입력되는 텍스트
         conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000', db='malatang',
                                charset='utf8')
+        # conn = pymysql.connect(host='localhost', port=3306, user='root', password='00000000', db='sy',
+        #                        charset='utf8')
         cursor = conn.cursor()
         cursor.execute(f"SELECT * FROM account_info WHERE account_id = '{id}'")
         check = cursor.fetchall()
@@ -238,15 +332,17 @@ class SmartStore(QMainWindow, form_class):
         phone = self.phone.text()  # 연락처
         address = self.address.text()  # 주소
         # 회원가입 시 필요한 조건
-        if joinpw != joinpw2: # 입력된 비밀번호가 다를 때
+        if joinpw != joinpw2:  # 입력된 비밀번호가 다를 때
             QMessageBox.critical(self, "알림", "비밀번호가 일치하지 않습니다. 다시 확인해주세요")
-        elif self.checkStatus == False: # 아이디 중복 확인 안했을때
+        elif self.checkStatus == False:  # 아이디 중복 확인 안했을때
             QMessageBox.critical(self, "알림", "아이디 중복 확인을 해주세요")
         elif joinid == '' or joinpw == '' or name == '' or phone == '' or address == '':  # 입력 되지 않은 정보가 있을때
             QMessageBox.critical(self, "알림", "정보를 입력하세요")
         else:
             conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000', db='malatang',
                                    charset='utf8')
+            # conn = pymysql.connect(host='localhost', port=3306, user='root', password='00000000', db='sy',
+            #                        charset='utf8')
             cursor = conn.cursor()
             cursor.execute(
                 f"INSERT INTO account_info (account_name, account_id, account_pw) VALUES('{name}','{joinid}','{joinpw}')")
@@ -266,8 +362,9 @@ class SmartStore(QMainWindow, form_class):
     def cslist(self):
         conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000', db='malatang',
                                charset='utf8')
+
         cursor = conn.cursor()
-        cursor.execute(f"SELECT * FROM customerservice WHERE division = '고객'") # 구분이 고객인 정보만 불러온다
+        cursor.execute(f"SELECT * FROM customerservice WHERE division = '고객'")  # 구분이 고객인 정보만 불러온다
         self.cs = cursor.fetchall()
         conn.close()
         for i in range(len(self.cs)):
@@ -292,9 +389,9 @@ class SmartStore(QMainWindow, form_class):
             return
         self.data = self.cs[self.cstable.currentRow()]  # 테이블 위젯의 값을 data에 저장
         print(self.data)
-        self.row = self.cstable.selectedItems()        # 테이블 위젯의 항목 리스트 형식으로 반환된 값을 row에 저장
+        self.row = self.cstable.selectedItems()  # 테이블 위젯의 항목 리스트 형식으로 반환된 값을 row에 저장
         print(self.row)
-        self.date = self.row[0].text()   # 날짜
+        self.date = self.row[0].text()  # 날짜
         self.account_name = self.row[1].text()  # 고객이름
         self.order_code = self.row[2].text()  # 주문번호
         self.product_name = self.row[3].text()  # 상품이름
@@ -315,28 +412,53 @@ class SmartStore(QMainWindow, form_class):
     # 답변 데이터 업로드 및 답변완료 메시지 박스
     def customer_answer(self):
         try:
-            self.cstable.setEditTriggers(QAbstractItemView.AllEditTriggers)    # 테이블 위젯 수정 가능하게 변경
+            self.cstable.setEditTriggers(QAbstractItemView.AllEditTriggers)  # 테이블 위젯 수정 가능하게 변경
 
             conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000', db='malatang',
                                    charset='utf8')
+            # conn = pymysql.connect(host='localhost', port=3306, user='root', password='00000000', db='sy',
+            #                        charset='utf8')
             cursor = conn.cursor()
-            cursor.execute(f"UPDATE customerservice SET answer='{self.answer}' WHERE order_code='{self.order_code}'")
+            cursor.execute(
+                f"UPDATE customerservice SET answer='{self.answer}' WHERE order_code='{self.order_code}'")
             conn.commit()
             conn.close()
             QMessageBox.information(self, '알림', '답변이 등록됐습니다.')
-        except: pass
+        except:
+            pass
 
-    def testqna(self):
-        self.th = thread_cs(self)
-        self.th.start()
+    # --------------------------------------------------------------------
+
+    def testmaketable(self):
+        # 테이블 위젯 헤더를 제외하고 한 번 초기화
+        self.cstable.clearContents()
+
+        # table_recipe 테이블 위젯의 row 개수 정해주기
+        self.cstable.setRowCount(len(self.testcslist))
+
+        Row = 0
+        for i in self.testcslist:
+            self.cstable.setItem(Row, 0, QTableWidgetItem(str(i[0])))  # 날짜
+            self.cstable.setItem(Row, 1, QTableWidgetItem(i[3]))  # 고객이름
+            self.cstable.setItem(Row, 2, QTableWidgetItem(i[4]))  # 주문번호
+            self.cstable.setItem(Row, 3, QTableWidgetItem(i[6]))  # 상품이름
+            self.cstable.setItem(Row, 4, QTableWidgetItem(i[7]))  # 문의내용
+            self.cstable.setItem(Row, 5, QTableWidgetItem(i[8]))  # 답변
+            Row += 1
 
     # ---------------------------------- 송화 ----------------------------------
+
     def goHome(self):
         self.stackedWidget.setCurrentIndex(0)
+
     def goStock(self):
         self.stackedWidget.setCurrentIndex(3)
 
-# 미사용중
+    def pageIndex(self):
+        page = self.stackedWidget.currentIndex()
+        return page
+
+    # 미사용중
     def comboboxSetting(self):
         # MySQL에서 import 해오기
         conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000',
@@ -370,7 +492,7 @@ class SmartStore(QMainWindow, form_class):
         m_price = self.material7.currentText()
         self.stock7.setText(m_price)
 
-# 재고관리
+    # 재고관리
     def showStock_table(self):
         # MySQL에서 import 해오기
         conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000',
@@ -385,99 +507,130 @@ class SmartStore(QMainWindow, form_class):
         for i in stock_info:
             self.stock_tableWidget.setItem(row, 0, QTableWidgetItem(i[0]))
             self.stock_tableWidget.setItem(row, 1, QTableWidgetItem(i[1]))
-            self.stock_tableWidget.setItem(row, 2, QTableWidgetItem(str(i[2])))     # type = int
-            self.stock_tableWidget.setItem(row, 3, QTableWidgetItem(str(i[3])))     # type = decimal
+            self.stock_tableWidget.setItem(row, 2, QTableWidgetItem(str(i[2])))  # type = int
+            self.stock_tableWidget.setItem(row, 3, QTableWidgetItem(str(i[3])))  # type = decimal
             row += 1
+
+    def confirmStock(self):
+        cannot = 0
+        item = self.orderlist.selectedItems()
+        conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000',
+                               db='malatang')
+        a = conn.cursor()
+        # 레시피 테이블에서 상품명에 해당하는 재료, 수량(1인분) 가져움
+        list = []  # 빈 리스트 생성, 만들 수 있는 양 넣어줄 예정
+        for j in range(len(self.bill_info)):
+            sql = f"SELECT material_name, amount FROM recipe where product_name = '{self.bill_info[j][0]}'"  # 주문 받은 상품명 넣을 예정
+            a.execute(sql)
+            amount_1 = a.fetchall()  # 1인분 ((재료명, 수량))
+            for i in range(len(amount_1)):
+                sql1 = f"SELECT total_amount FROM inventory where material_name = '{amount_1[i][0]}'"  # 재료명
+                a.execute(sql1)
+                stock_info = a.fetchall()  # ((수량,),)
+                if int(stock_info[0][0]) < int(amount_1[i][1]):
+                    list.append(amount_1[i][0])
+                    cannot = 1
+                    break
+        if cannot == 0:
+            QMessageBox.information(self, '알림', '발송 되었습니다')
+            sql2 = f"update order_info set order_state = '발송완료' where order_code = {(int(item[1].text()))}"
+            a.execute(sql2)
+            conn.commit()
+            # self.showOrderlist()
+            self.minusStock()
+            # 쓰레드
+            self.testThread = Delivary(self)
+            self.testThread.start()
+        else:
+            QMessageBox.information(self, '알림', f'{list}의 재고가 부족합니다')
 
     def minusStock(self):
         # MySQL에서 import 해오기
         conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000',
                                db='malatang')
         a = conn.cursor()
-        # 레시피 테이블에서 재료, 수량 가져움     (↓주문수)
-        sql = f"SELECT material_name, amount*3 FROM recipe where product_name = '마라탕'"
-        a.execute(sql)
-        outofstock = a.fetchall()   # 소진된 재고량 ((재료명, 수량*3))
-        # 인벤토리 테이블에 주문량 만큼 재고 차감
-        for i in range(len(outofstock)):
-            # 재료의 남아 있는 양 불러옴
-            sql1 = f"SELECT total_amount FROM inventory where material_name = '{outofstock[i][0]}'" # 재료명
-            a.execute(sql1)
-            stock_info = a.fetchall()   # 현재 재고량
-            # 남은 재고량 = 현재 재고량 - 사용량
-            remain_stock = int(stock_info[i][0]) - int(outofstock[i][1])
-            # 남은 재고량으로 업데이트
-            sql2 = f"update inventory set total_amount = {remain_stock} where material_name = '{outofstock[i][0]}'"
-            a.execute(sql2)
-            conn.commit()
-        self.showstock_table()
+        for j in range(len(self.bill_info)):
+            # 레시피 테이블에서 재료, 수량 가져움       (↓주문수)
+            sql = f"SELECT material_name, amount*{int(self.bill_info[j][1])} FROM recipe where product_name = '{self.bill_info[j][0]}'"
+            a.execute(sql)
+            outofstock = a.fetchall()  # 소진된 재고량 ((재료명, 수량*주문수))
+            # 인벤토리 테이블에 주문량 만큼 재고 차감
+            for i in range(len(outofstock)):
+                # 재료의 남아 있는 양 불러옴
+                sql1 = f"SELECT total_amount FROM inventory where material_name = '{outofstock[i][0]}'"  # 재료명
+                a.execute(sql1)
+                stock_info = a.fetchall()  # 현재 재고량
+                # 남은 재고량 = 현재 재고량 - 사용량
+                remain_stock = int(stock_info[0][0]) - int(outofstock[i][1])
+                # 남은 재고량으로 업데이트
+                sql2 = f"update inventory set total_amount = {remain_stock} where material_name = '{outofstock[i][0]}'"
+                a.execute(sql2)
+                conn.commit()
+        self.showStock_table()
 
     def canMake(self):
         # MySQL에서 import 해오기
         conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000',
                                db='malatang')
         a = conn.cursor()
-        # 레시피 테이블에서 상품명에 해당하는 재료, 수량 가져움
-        sql = f"SELECT material_name, amount FROM recipe where product_name = '마라탕'" # 주문 받은 상품명 넣을 예정
-        a.execute(sql)
-        amount_1 = a.fetchall()  # 1인분 ((재료명, 수량))
-        list = []   # 빈 리스트 생성, 만들 수 있는 양 넣어줄 예정
-        for i in range(len(amount_1)):
-            # 만들 수 있는 양(필요한 재료 양) = 현재 재고량 / 1인분량 의 최솟값
-            sql1 = f"SELECT round(total_amount/{int(amount_1[i][1])}, 0) FROM inventory where material_name = '{amount_1[i][0]}'"  # 재료명
-            a.execute(sql1)
-            stock_info = a.fetchall()
-            list.append(stock_info)
-        cancook = min(list)   #최솟값 만큼 만들 수 있다!
+        list = []  # 빈 리스트 생성, 만들 수 있는 양 넣어줄 예정
+        for j in range(len(self.bill_info)):
+            # 레시피 테이블에서 상품명에 해당하는 재료, 수량 가져움
+            sql = f"SELECT material_name, amount FROM recipe where product_name = '{self.bill_info[j][0]}'"  # 주문 받은 상품명 넣을 예정
+            a.execute(sql)
+            amount_1 = a.fetchall()  # 1인분 ((재료명, 수량))
+            for i in range(len(amount_1)):
+                # 만들 수 있는 양(필요한 재료 양) = 현재 재고량 / 1인분량 의 최솟값
+                sql1 = f"SELECT round(total_amount/{int(amount_1[i][1])}, 0) FROM inventory where material_name = '{amount_1[i][0]}'"  # 재료명
+                a.execute(sql1)
+                stock_info = a.fetchall()
+                list.append(stock_info)
+        cancook = min(list)  # 최솟값 만큼 만들 수 있다!
 
-# 주문관리
+    # 주문관리
     def showOrderlist(self):
         # MySQL에서 import 해오기
         conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000',
                                db='malatang')
         a = conn.cursor()
         # 재고 정보 모두 불러오기
-        sql = f"SELECT account_name, order_code, order_state FROM order_info"
+        sql = f"SELECT distinct account_name, order_code, order_state FROM order_info"
         a.execute(sql)
-        stock_info = a.fetchall()
+        self.stock_info = a.fetchall()
         # ((고객, 주문 번호, 주문 상태))
         row = 0
-        self.orderlist.setRowCount(len(stock_info))
-        for i in stock_info:
+        self.orderlist.setRowCount(len(self.stock_info))
+        for i in self.stock_info:
             self.orderlist.setItem(row, 0, QTableWidgetItem(str(i[0])))
             self.orderlist.setItem(row, 1, QTableWidgetItem(str(i[1])))  # type = int
             self.orderlist.setItem(row, 2, QTableWidgetItem(str(i[2])))
             row += 1
 
-        # 테이블 위젯 클릭 하면 주문정보 보이게 하기
-
-        sql1 = f"SELECT product_name, product_quantity FROM order_info"
-        a.execute(sql1)
-        bill_info = a.fetchall()
-        row1 = 0
-        self.bill_tableWidget.setRowCount(len(bill_info))
-        for i in stock_info:
-            self.bill_tableWidget.setItem(row, 0, QTableWidgetItem(str(i[0])))
-            self.bill_tableWidget.setItem(row, 1, QTableWidgetItem(str(i[1])))  # type = int
-            row1 += 1
-    def order(self):
+    # 테이블 위젯 클릭 하면 주문정보 보이게 하기
+    def showProduct(self, row, column):
+        item = self.orderlist.selectedItems()  # 선택한 셀의 행을 반환(qt에서 행 선택으로 바꿔야함)
         # MySQL에서 import 해오기
         conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000',
                                db='malatang')
         a = conn.cursor()
-        # 재고 정보 모두 불러오기
-        sql = f"select distinct order_code from order_info where order_state = '준비중'"
-        a.execute(sql)
-        order_check = a.fetchall()
-        print(order_check)
-        ordercode_list=[]
-        for x in order_check:
-            ordercode_list.append(x[0])
-        for i in ordercode_list:
-            sql1 = f"select * from order_info where order_code = {i}"
-            a.execute(sql1)
-            order_check1 = a.fetchall()
-            print(order_check1)
+        sql1 = f"SELECT product_name, product_quantity FROM order_info where order_code = {int(item[1].text())}"
+        a.execute(sql1)
+        self.bill_info = a.fetchall()
+        row1 = 0
+        self.bill_tableWidget.setRowCount(len(self.bill_info))
+        for i in self.bill_info:
+            self.bill_tableWidget.setItem(row1, 0, QTableWidgetItem(str(i[0])))
+            self.bill_tableWidget.setItem(row1, 1, QTableWidgetItem(str(i[1])))  # type = int
+            row1 += 1
+        # 쓰레드 시작
+        self.ira = shortageAlarm(self)
+        self.ira.start()
+
+    def sendProduct(self):
+        if not bool(self.bill_tableWidget.rowCount()):
+            QMessageBox.information(self, "알림", "고객주문을 선택해주세요")
+        else:
+            self.confirmStock()
 
     # ---------------------------------- 연수 ----------------------------------
     # 콤보박스 선택하면 테이블 위젯에 BoM 보여주기
@@ -838,43 +991,29 @@ class thread_cs(threading.Thread):
     def __init__(self, parent):
         super().__init__()
         self.parent = parent
-        print('1234')
 
     def run(self):
         while True:
-            # if self.parent.quit or self.parent.test_th:
-            #     print('쓰레드 종료')
-            #     self.parent.qnalabel.setText('')
-            #     return
-            time.sleep(3)
-            print('123456789')
-            # n = random.randint(1,10)
+            if self.parent.end:
+                print('쓰레드 종료')
+                return
+            time.sleep(2)
             conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000', db='malatang',
                                    charset='utf8')
             cursor = conn.cursor()
             cursor.execute(f"SELECT * FROM customerservice ORDER BY RAND() LIMIT 1")
-            self.parent.testcslist = cursor.fetchall()
-            print(self.parent.testcslist)
-            conn.close()
-            for i in range(len(self.parent.testcslist)):
-                print(self.parent.testcslist[i])
-            self.cstable.setRowCount(len(self.parent.testcslist))
+            testcslist = cursor.fetchall()
+            # 2중 튜플
+            print(testcslist)
+            if testcslist != None:
+                self.parent.testcslist.append(list(testcslist[0]))
+                self.parent.testmaketable()
 
-            Row = 0
-            for i in self.parent.testcslist:
-                self.cstable.setItem(Row, 0, QTableWidgetItem(str(i[0])))  # 날짜
-                self.cstable.setItem(Row, 1, QTableWidgetItem(i[3]))  # 고객이름
-                self.cstable.setItem(Row, 2, QTableWidgetItem(i[4]))  # 주문번호
-                self.cstable.setItem(Row, 3, QTableWidgetItem(i[6]))  # 상품이름
-                self.cstable.setItem(Row, 4, QTableWidgetItem(i[7]))  # 문의내용
-                self.cstable.setItem(Row, 5, QTableWidgetItem(i[8]))  # 답변
-                Row += 1
-            if self.parent.testcslist != None:
-                self.parent.qnalabel.setText(f'새로운 문의가 왔습니다')
-                self.parent.qnalabel.show()
+                self.parent.btn_qna.show()
+                self.parent.btn_qna.setText(f'새로운 문의가 들어왔습니다')
+
                 time.sleep(5)
-            if self.parent.testcslist == None:
-                self.parent.qnalabel.hide()
+
             conn.commit()
             conn.close()
 
