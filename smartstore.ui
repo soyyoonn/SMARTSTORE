@@ -26,7 +26,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>3</number>
+    <number>0</number>
    </property>
    <widget class="QWidget" name="page_2">
     <widget class="QPushButton" name="btn_login">
@@ -34,9 +34,17 @@
       <rect>
        <x>930</x>
        <y>30</y>
-       <width>90</width>
-       <height>30</height>
+       <width>91</width>
+       <height>31</height>
       </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton{
+	font: 13pt &quot;GyeonggiBatang&quot;;
+	color: white;
+	background-color: rgb(82, 194, 105);
+	border-radius: 5px;
+}</string>
      </property>
      <property name="text">
       <string>로그인</string>
@@ -45,11 +53,19 @@
     <widget class="QPushButton" name="btn_order">
      <property name="geometry">
       <rect>
-       <x>320</x>
-       <y>350</y>
-       <width>90</width>
-       <height>30</height>
+       <x>289</x>
+       <y>319</y>
+       <width>121</width>
+       <height>61</height>
       </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton{
+	font: 15pt &quot;GyeonggiBatang&quot;;
+	color: white;
+	background-color: rgb(156, 201, 255);
+	border-radius: 5px;
+}</string>
      </property>
      <property name="text">
       <string>주문관리</string>
@@ -58,11 +74,21 @@
     <widget class="QPushButton" name="btn_cs">
      <property name="geometry">
       <rect>
-       <x>640</x>
-       <y>350</y>
-       <width>90</width>
-       <height>30</height>
+       <x>620</x>
+       <y>319</y>
+       <width>121</width>
+       <height>61</height>
       </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton{
+	font: 15pt &quot;GyeonggiBatang&quot;;
+	color: white;
+	
+	
+	background-color: rgb(222, 205, 255);
+	border-radius: 5px;
+}</string>
      </property>
      <property name="text">
       <string>문의관리</string>
@@ -71,28 +97,85 @@
     <widget class="QPushButton" name="btn_product">
      <property name="geometry">
       <rect>
-       <x>490</x>
-       <y>350</y>
-       <width>90</width>
-       <height>30</height>
+       <x>456</x>
+       <y>319</y>
+       <width>121</width>
+       <height>61</height>
       </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton{
+	font: 15pt &quot;GyeonggiBatang&quot;;
+	color: white;
+	background-color: rgb(255, 194, 247);
+	border-radius: 5px;
+}
+</string>
      </property>
      <property name="text">
       <string>상품등록</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="btn_test">
+    <widget class="QStackedWidget" name="stackedWidget_2">
      <property name="geometry">
       <rect>
-       <x>820</x>
-       <y>30</y>
-       <width>90</width>
-       <height>30</height>
+       <x>800</x>
+       <y>20</y>
+       <width>120</width>
+       <height>51</height>
       </rect>
      </property>
-     <property name="text">
-      <string>test</string>
+     <property name="currentIndex">
+      <number>0</number>
      </property>
+     <widget class="QWidget" name="page_7">
+      <widget class="QPushButton" name="btn_end">
+       <property name="geometry">
+        <rect>
+         <x>14</x>
+         <y>12</y>
+         <width>91</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton{
+	font: 15pt &quot;GyeonggiBatang&quot;;
+	color: rgb(82, 194, 105);
+	background-color: white;
+	border: 2px solid  rgb(82, 194, 105);
+	border-radius: 5px;
+}</string>
+       </property>
+       <property name="text">
+        <string>종료</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QWidget" name="page_8">
+      <widget class="QPushButton" name="btn_test">
+       <property name="geometry">
+        <rect>
+         <x>14</x>
+         <y>12</y>
+         <width>91</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton{
+	font: 15pt &quot;GyeonggiBatang&quot;;
+	color: rgb(82, 194, 105);
+	background-color: white;
+	border: 2px solid  rgb(82, 194, 105);
+	border-radius: 5px;
+}</string>
+       </property>
+       <property name="text">
+        <string>test</string>
+       </property>
+      </widget>
+     </widget>
     </widget>
    </widget>
    <widget class="QWidget" name="page">
@@ -559,87 +642,38 @@
     <widget class="QLabel" name="label_2">
      <property name="geometry">
       <rect>
-       <x>63</x>
-       <y>395</y>
-       <width>56</width>
-       <height>12</height>
+       <x>60</x>
+       <y>430</y>
+       <width>111</width>
+       <height>31</height>
       </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">font: 20pt &quot;GyeonggiBatang&quot;;</string>
      </property>
      <property name="text">
       <string>재료재고</string>
      </property>
     </widget>
-    <widget class="QComboBox" name="material5">
-     <property name="geometry">
-      <rect>
-       <x>60</x>
-       <y>430</y>
-       <width>76</width>
-       <height>22</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="stock5">
-     <property name="geometry">
-      <rect>
-       <x>150</x>
-       <y>430</y>
-       <width>113</width>
-       <height>20</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QComboBox" name="material6">
-     <property name="geometry">
-      <rect>
-       <x>290</x>
-       <y>430</y>
-       <width>76</width>
-       <height>22</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="stock6">
-     <property name="geometry">
-      <rect>
-       <x>370</x>
-       <y>430</y>
-       <width>113</width>
-       <height>20</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QComboBox" name="material7">
-     <property name="geometry">
-      <rect>
-       <x>500</x>
-       <y>430</y>
-       <width>76</width>
-       <height>22</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="stock7">
-     <property name="geometry">
-      <rect>
-       <x>590</x>
-       <y>430</y>
-       <width>113</width>
-       <height>20</height>
-      </rect>
-     </property>
-    </widget>
     <widget class="QPushButton" name="btn_home3">
      <property name="geometry">
       <rect>
-       <x>940</x>
-       <y>20</y>
-       <width>75</width>
-       <height>23</height>
+       <x>944</x>
+       <y>2</y>
+       <width>91</width>
+       <height>41</height>
       </rect>
      </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton{
+	font: 12pt &quot;GyeonggiBatang&quot;;
+	color: white;
+	background-color: rgb(82, 194, 105);
+	border-radius: 5px;
+}</string>
+     </property>
      <property name="text">
-      <string>home</string>
+      <string>HOME</string>
      </property>
     </widget>
     <widget class="QTableWidget" name="stock_tableWidget">
@@ -718,9 +752,12 @@
       <rect>
        <x>60</x>
        <y>20</y>
-       <width>56</width>
-       <height>20</height>
+       <width>111</width>
+       <height>31</height>
       </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">font: 20pt &quot;GyeonggiBatang&quot;;</string>
      </property>
      <property name="text">
       <string>주문관리</string>
@@ -730,10 +767,17 @@
      <property name="geometry">
       <rect>
        <x>900</x>
-       <y>360</y>
-       <width>75</width>
-       <height>23</height>
+       <y>342</y>
+       <width>101</width>
+       <height>41</height>
       </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">	font: 13pt &quot;GyeonggiBatang&quot;;
+	color: rgb(82, 194, 105);
+	background-color: white;
+	border: 2px solid rgb(82, 194, 105);
+	border-radius: 5px;</string>
      </property>
      <property name="text">
       <string>발송하기</string>
@@ -929,29 +973,29 @@
     <widget class="QPushButton" name="btn_home4">
      <property name="geometry">
       <rect>
-       <x>890</x>
-       <y>50</y>
-       <width>75</width>
-       <height>23</height>
+       <x>944</x>
+       <y>2</y>
+       <width>91</width>
+       <height>41</height>
       </rect>
      </property>
      <property name="font">
       <font>
        <family>GyeonggiBatang</family>
-       <pointsize>10</pointsize>
+       <pointsize>12</pointsize>
        <weight>50</weight>
        <italic>false</italic>
        <bold>false</bold>
       </font>
      </property>
      <property name="styleSheet">
-      <string notr="true">	font: 10pt &quot;GyeonggiBatang&quot;;
+      <string notr="true">	font: 12pt &quot;GyeonggiBatang&quot;;
 	color: white;
 	background-color: rgb(82, 194, 105);
 	border-radius: 5px;</string>
      </property>
      <property name="text">
-      <string>home</string>
+      <string>HOME</string>
      </property>
     </widget>
     <widget class="QTableWidget" name="table_BoM">
@@ -1321,14 +1365,22 @@
     <widget class="QPushButton" name="btn_home5">
      <property name="geometry">
       <rect>
-       <x>900</x>
-       <y>30</y>
-       <width>75</width>
-       <height>23</height>
+       <x>944</x>
+       <y>2</y>
+       <width>91</width>
+       <height>41</height>
       </rect>
      </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton{
+	font: 12pt &quot;GyeonggiBatang&quot;;
+	color: white;
+	background-color: rgb(82, 194, 105);
+	border-radius: 5px;
+}</string>
+     </property>
      <property name="text">
-      <string>home</string>
+      <string>HOME</string>
      </property>
     </widget>
     <widget class="QLabel" name="label_5">
@@ -1393,11 +1445,20 @@
     <widget class="QPushButton" name="btn_check3">
      <property name="geometry">
       <rect>
-       <x>870</x>
-       <y>470</y>
-       <width>75</width>
-       <height>25</height>
+       <x>864</x>
+       <y>464</y>
+       <width>81</width>
+       <height>31</height>
       </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton{
+	font: 15pt &quot;GyeonggiBatang&quot;;
+	color: rgb(82, 194, 105);
+	background-color: white;
+	border: 2px solid  rgb(82, 194, 105);
+	border-radius: 5px;
+}</string>
      </property>
      <property name="text">
       <string>조회</string>
@@ -1406,30 +1467,26 @@
     <widget class="QPushButton" name="btn_answer">
      <property name="geometry">
       <rect>
-       <x>873</x>
-       <y>90</y>
-       <width>75</width>
-       <height>25</height>
+       <x>857</x>
+       <y>84</y>
+       <width>91</width>
+       <height>31</height>
       </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton{
+	font: 15pt &quot;GyeonggiBatang&quot;;
+	color: rgb(82, 194, 105);
+	background-color: white;
+	border: 2px solid  rgb(82, 194, 105);
+	border-radius: 5px;
+}</string>
      </property>
      <property name="text">
       <string>답변 완료</string>
      </property>
     </widget>
    </widget>
-  </widget>
-  <widget class="QLabel" name="qnalabel">
-   <property name="geometry">
-    <rect>
-     <x>720</x>
-     <y>861</y>
-     <width>281</width>
-     <height>101</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>TextLabel</string>
-   </property>
   </widget>
   <widget class="QLabel" name="orderAlarm_label">
    <property name="geometry">
@@ -1442,6 +1499,28 @@
    </property>
    <property name="text">
     <string/>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btn_qna">
+   <property name="geometry">
+    <rect>
+     <x>690</x>
+     <y>870</y>
+     <width>331</width>
+     <height>61</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QPushButton{
+	font: 15pt &quot;GyeonggiBatang&quot;;
+	color: rgb(82, 194, 105);
+	background-color: white;
+	border: 2px solid  rgb(82, 194, 105);
+	border-radius: 5px;
+}</string>
+   </property>
+   <property name="text">
+    <string>문의 알림</string>
    </property>
   </widget>
  </widget>
