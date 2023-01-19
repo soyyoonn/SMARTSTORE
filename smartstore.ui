@@ -26,7 +26,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>5</number>
+    <number>3</number>
    </property>
    <widget class="QWidget" name="page_2">
     <widget class="QPushButton" name="btn_login">
@@ -81,18 +81,48 @@
       <string>상품등록</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="btn_test">
+    <widget class="QStackedWidget" name="stackedWidget_2">
      <property name="geometry">
       <rect>
-       <x>820</x>
-       <y>30</y>
-       <width>90</width>
-       <height>30</height>
+       <x>800</x>
+       <y>20</y>
+       <width>121</width>
+       <height>51</height>
       </rect>
      </property>
-     <property name="text">
-      <string>test</string>
+     <property name="currentIndex">
+      <number>0</number>
      </property>
+     <widget class="QWidget" name="page_7">
+      <widget class="QPushButton" name="btn_test">
+       <property name="geometry">
+        <rect>
+         <x>12</x>
+         <y>10</y>
+         <width>90</width>
+         <height>30</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>test</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QWidget" name="page_8">
+      <widget class="QPushButton" name="btn_end">
+       <property name="geometry">
+        <rect>
+         <x>12</x>
+         <y>10</y>
+         <width>90</width>
+         <height>30</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>종료</string>
+       </property>
+      </widget>
+     </widget>
     </widget>
    </widget>
    <widget class="QWidget" name="page">
@@ -1431,17 +1461,17 @@
     </widget>
    </widget>
   </widget>
-  <widget class="QLabel" name="qnalabel">
+  <widget class="QPushButton" name="btn_qna">
    <property name="geometry">
     <rect>
-     <x>720</x>
-     <y>861</y>
-     <width>281</width>
-     <height>101</height>
+     <x>760</x>
+     <y>860</y>
+     <width>271</width>
+     <height>111</height>
     </rect>
    </property>
    <property name="text">
-    <string>TextLabel</string>
+    <string>문의 알림</string>
    </property>
   </widget>
  </widget>
