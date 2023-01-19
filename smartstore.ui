@@ -26,7 +26,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>3</number>
+    <number>5</number>
    </property>
    <widget class="QWidget" name="page_2">
     <widget class="QPushButton" name="btn_login">
@@ -91,7 +91,7 @@
       </rect>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="page_7">
       <widget class="QPushButton" name="btn_test">
@@ -1476,17 +1476,17 @@
     </widget>
    </widget>
   </widget>
-  <widget class="QLabel" name="qnalabel">
+  <widget class="QPushButton" name="btn_qna">
    <property name="geometry">
     <rect>
-     <x>720</x>
-     <y>861</y>
-     <width>281</width>
-     <height>101</height>
+     <x>740</x>
+     <y>862</y>
+     <width>271</width>
+     <height>111</height>
     </rect>
    </property>
    <property name="text">
-    <string>TextLabel</string>
+    <string>문의 알림</string>
    </property>
   </widget>
  </widget>
