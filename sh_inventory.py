@@ -1,6 +1,5 @@
 import datetime
 import time
-
 import pymysql
 import sys
 from PyQt5.QtWidgets import *
@@ -57,10 +56,14 @@ class Search(QWidget, form_widget):
         # 쓰레드
         self.ira = shortageAlarm(self)
         self.ira.start()
-
+        # 페이지 이동
         self.stackedWidget.setCurrentIndex(0)
-        self.btn_product.clicked.connect(self.goStock)  # 홈페이지 - 상품등록버튼
+        self.btn_order.clicked.connect(self.goStock)  # 홈페이지 - 주문관리버튼
         self.btn_home3.clicked.connect(self.goHome)    # 상품등록페이지 - 홈버튼
+
+        # 메서드 연결
+        self.orderlist.cellClicked.connect(self.showProduct)
+        self.btn_check2.clicked.connect(self.sendProduct)
 
         # tableWidget 열 넓이 조정
         self.stock_tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -69,9 +72,9 @@ class Search(QWidget, form_widget):
         self.showStock_table()
         # self.comboboxSetting()
         # self.minusStock()
-        self.canMake()
+        # self.canMake()
         self.showOrderlist()
-        self.order()
+        # self.sendProduct()
 
     def goHome(self):
         self.stackedWidget.setCurrentIndex(0)
@@ -131,27 +134,61 @@ class Search(QWidget, form_widget):
             self.stock_tableWidget.setItem(row, 3, QTableWidgetItem(str(i[3])))     # type = decimal
             row += 1
 
+    def confirmStock(self):
+        cannot = 0
+        item = self.orderlist.selectedItems()
+        conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000',
+                               db='malatang')
+        a = conn.cursor()
+        # 레시피 테이블에서 상품명에 해당하는 재료, 수량(1인분) 가져움
+        list = []  # 빈 리스트 생성, 만들 수 있는 양 넣어줄 예정
+        for j in range(len(self.bill_info)):
+            sql = f"SELECT material_name, amount FROM recipe where product_name = '{self.bill_info[j][0]}'"  # 주문 받은 상품명 넣을 예정
+            a.execute(sql)
+            amount_1 = a.fetchall()  # 1인분 ((재료명, 수량))
+            for i in range(len(amount_1)):
+                sql1 = f"SELECT total_amount FROM inventory where material_name = '{amount_1[i][0]}'"  # 재료명
+                a.execute(sql1)
+                stock_info = a.fetchall()  # ((수량,),)
+                if int(stock_info[0][0]) < int(amount_1[i][1]):
+                    list.append(amount_1[i][0])
+                    cannot = 1
+                    break
+
+        if cannot == 0:
+            QMessageBox.information(self, '알림', '발송 되었습니다')
+            sql2= f"update order_info set order_state = '발송완료' where order_code = {(int(item[1].text()))}"
+            a.execute(sql2)
+            conn.commit()
+            self.showOrderlist()
+            self.minusStock()
+        else:
+            QMessageBox.information(self, '알림', f'{list}의 재고가 부족합니다')
+
     def minusStock(self):
         # MySQL에서 import 해오기
         conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000',
                                db='malatang')
         a = conn.cursor()
-        # 레시피 테이블에서 재료, 수량 가져움     (↓주문수)
-        sql = f"SELECT material_name, amount*3 FROM recipe where product_name = '마라탕'"
-        a.execute(sql)
-        outofstock = a.fetchall()   # 소진된 재고량 ((재료명, 수량*3))
-        # 인벤토리 테이블에 주문량 만큼 재고 차감
-        for i in range(len(outofstock)):
-            # 재료의 남아 있는 양 불러옴
-            sql1 = f"SELECT total_amount FROM inventory where material_name = '{outofstock[i][0]}'" # 재료명
-            a.execute(sql1)
-            stock_info = a.fetchall()   # 현재 재고량
-            # 남은 재고량 = 현재 재고량 - 사용량
-            remain_stock = int(stock_info[i][0]) - int(outofstock[i][1])
-            # 남은 재고량으로 업데이트
-            sql2 = f"update inventory set total_amount = {remain_stock} where material_name = '{outofstock[i][0]}'"
-            a.execute(sql2)
-            conn.commit()
+        for j in range(len(self.bill_info)):
+            # 레시피 테이블에서 재료, 수량 가져움       (↓주문수)
+            sql = f"SELECT material_name, amount*{int(self.bill_info[j][1])} FROM recipe where product_name = '{self.bill_info[j][0]}'"
+            a.execute(sql)
+            outofstock = a.fetchall()   # 소진된 재고량 ((재료명, 수량*3))
+            # 인벤토리 테이블에 주문량 만큼 재고 차감
+            for i in range(len(outofstock)):
+                # 재료의 남아 있는 양 불러옴
+                sql1 = f"SELECT total_amount FROM inventory where material_name = '{outofstock[i][0]}'" # 재료명
+                a.execute(sql1)
+                stock_info = a.fetchall()   # 현재 재고량
+                print("@@@@@",stock_info)
+                # 남은 재고량 = 현재 재고량 - 사용량
+                remain_stock = int(stock_info[i][0]) - int(outofstock[i][1])
+                print(remain_stock)
+                # 남은 재고량으로 업데이트
+                sql2 = f"update inventory set total_amount = {remain_stock} where material_name = '{outofstock[i][0]}'"
+                a.execute(sql2)
+                conn.commit()
         self.showstock_table()
 
     def canMake(self):
@@ -159,17 +196,18 @@ class Search(QWidget, form_widget):
         conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000',
                                db='malatang')
         a = conn.cursor()
-        # 레시피 테이블에서 상품명에 해당하는 재료, 수량 가져움
-        sql = f"SELECT material_name, amount FROM recipe where product_name = '마라탕'" # 주문 받은 상품명 넣을 예정
-        a.execute(sql)
-        amount_1 = a.fetchall()  # 1인분 ((재료명, 수량))
-        list = []   # 빈 리스트 생성, 만들 수 있는 양 넣어줄 예정
-        for i in range(len(amount_1)):
-            # 만들 수 있는 양(필요한 재료 양) = 현재 재고량 / 1인분량 의 최솟값
-            sql1 = f"SELECT round(total_amount/{int(amount_1[i][1])}, 0) FROM inventory where material_name = '{amount_1[i][0]}'"  # 재료명
-            a.execute(sql1)
-            stock_info = a.fetchall()
-            list.append(stock_info)
+        list = []  # 빈 리스트 생성, 만들 수 있는 양 넣어줄 예정
+        for j in range(len(self.bill_info)):
+            # 레시피 테이블에서 상품명에 해당하는 재료, 수량 가져움
+            sql = f"SELECT material_name, amount FROM recipe where product_name = '{self.bill_info[j][0]}'" # 주문 받은 상품명 넣을 예정
+            a.execute(sql)
+            amount_1 = a.fetchall()  # 1인분 ((재료명, 수량))
+            for i in range(len(amount_1)):
+                # 만들 수 있는 양(필요한 재료 양) = 현재 재고량 / 1인분량 의 최솟값
+                sql1 = f"SELECT round(total_amount/{int(amount_1[i][1])}, 0) FROM inventory where material_name = '{amount_1[i][0]}'"  # 재료명
+                a.execute(sql1)
+                stock_info = a.fetchall()
+                list.append(stock_info)
         cancook = min(list)   #최솟값 만큼 만들 수 있다!
 
 # 주문관리
@@ -179,47 +217,43 @@ class Search(QWidget, form_widget):
                                db='malatang')
         a = conn.cursor()
         # 재고 정보 모두 불러오기
-        sql = f"SELECT account_name, order_code, order_state FROM order_info"
+        sql = f"SELECT distinct account_name, order_code, order_state FROM order_info"
         a.execute(sql)
-        stock_info = a.fetchall()
+        self.stock_info = a.fetchall()
         # ((고객, 주문 번호, 주문 상태))
         row = 0
-        self.orderlist.setRowCount(len(stock_info))
-        for i in stock_info:
+        self.orderlist.setRowCount(len(self.stock_info))
+        for i in self.stock_info:
             self.orderlist.setItem(row, 0, QTableWidgetItem(str(i[0])))
             self.orderlist.setItem(row, 1, QTableWidgetItem(str(i[1])))  # type = int
             self.orderlist.setItem(row, 2, QTableWidgetItem(str(i[2])))
             row += 1
 
-        # 테이블 위젯 클릭 하면 주문정보 보이게 하기
-
-        sql1 = f"SELECT product_name, product_quantity FROM order_info"
-        a.execute(sql1)
-        bill_info = a.fetchall()
-        row1 = 0
-        self.bill_tableWidget.setRowCount(len(bill_info))
-        for i in stock_info:
-            self.bill_tableWidget.setItem(row, 0, QTableWidgetItem(str(i[0])))
-            self.bill_tableWidget.setItem(row, 1, QTableWidgetItem(str(i[1])))  # type = int
-            row1 += 1
-    def order(self):
+    # 테이블 위젯 클릭 하면 주문정보 보이게 하기
+    def showProduct(self, row, column):
+        item = self.orderlist.selectedItems()   # 선택한 셀의 행을 반환(qt에서 행 선택으로 바꿔야함)
         # MySQL에서 import 해오기
         conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000',
                                db='malatang')
         a = conn.cursor()
-        # 재고 정보 모두 불러오기
-        sql = f"select distinct order_code from order_info where order_state = '준비중'"
-        a.execute(sql)
-        order_check = a.fetchall()
-        print(order_check)
-        ordercode_list=[]
-        for x in order_check:
-            ordercode_list.append(x[0])
-        for i in ordercode_list:
-            sql1 = f"select * from order_info where order_code = {i}"
-            a.execute(sql1)
-            order_check1 = a.fetchall()
-            print(order_check1)
+        sql1 = f"SELECT product_name, product_quantity FROM order_info where order_code = {int(item[1].text())}"
+        a.execute(sql1)
+        self.bill_info = a.fetchall()
+        print(self.bill_info)
+        row1 = 0
+        self.bill_tableWidget.setRowCount(len(self.bill_info))
+        for i in self.bill_info:
+            self.bill_tableWidget.setItem(row1, 0, QTableWidgetItem(str(i[0])))
+            self.bill_tableWidget.setItem(row1, 1, QTableWidgetItem(str(i[1])))  # type = int
+            row1 += 1
+
+    def sendProduct(self):
+        if not bool(self.bill_tableWidget.rowCount()):
+            QMessageBox.information(self,"알림", "고객주문을 선택해주세요")
+        else:
+            self.confirmStock()
+
+
 
 if __name__ == "__main__":
 
