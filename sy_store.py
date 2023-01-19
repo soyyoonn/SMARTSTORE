@@ -7,8 +7,12 @@ from PyQt5.QtWidgets import *
 from PyQt5 import uic
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox
 import threading
+
+# conn = pymysql.connect(host='localhost', port=3306, user='root', password='00000000', db='sy',
+#                                charset='utf8')
 
 form_class = uic.loadUiType("smartstore.ui")[0]
 
@@ -17,6 +21,7 @@ class smartstore(QMainWindow,form_class):
         super().__init__()
         self.setupUi(self)
         self.stackedWidget.setCurrentIndex(0)
+        self.stackedWidget_2.setCurrentIndex(0)
         self.log_check = False   # 로그인 체크
         self.checkStatus = False  # 중복확인 체크
         self.btn_home1.clicked.connect(self.move_main)   # 메인 페이지로 이동
@@ -36,7 +41,12 @@ class smartstore(QMainWindow,form_class):
         self.btn_cs.clicked.connect(self.move_cs) # 문의관리 페이지로 이동
         self.btn_check3.clicked.connect(self.cslist) # 문의 내역을 보여준다
         self.btn_answer.clicked.connect(self.check_answer) # 답변 등록 완료 실행
-        self.btn_test.clicked.connect(self.testqna)
+        self.btn_test.clicked.connect(self.start_test)
+        self.btn_end.clicked.connect(self.end_test)
+        self.btn_qna.clicked.connect(self.move_testqna)
+        self.btn_qna.hide()
+        self.end = False
+        self.cs = thread_cs(self)
 
     # 메인 페이지로 이동
     def move_main(self):
@@ -68,6 +78,22 @@ class smartstore(QMainWindow,form_class):
         # elif self.log_check == True:
         self.stackedWidget.setCurrentIndex(5)
 
+    def move_testqna(self):
+        self.stackedWidget.setCurrentIndex(5)
+        self.btn_qna.hide()
+
+    def start_test(self):
+        self.stackedWidget_2.setCurrentIndex(1)
+        self.cs.start()
+
+    # def testqna(self):
+    #     self.th = thread_cs(self)
+    #     self.th.start()
+
+    def end_test(self):
+        self.stackedWidget_2.setCurrentIndex(0)
+        self.end = True
+
     # 아이디, 비밀번호 클리어
     def clear_check(self):
         self.id.clear()
@@ -82,6 +108,8 @@ class smartstore(QMainWindow,form_class):
             return
         conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000', db='malatang',
                                charset='utf8')
+        # conn = pymysql.connect(host='localhost', port=3306, user='root', password='00000000', db='sy',
+        #                        charset='utf8')
         cursor = conn.cursor()
         cursor.execute(
             f"SELECT * FROM account_info WHERE account_id='{id}' AND account_pw='{pw}'")
@@ -108,6 +136,8 @@ class smartstore(QMainWindow,form_class):
         id = self.joinid.text()  # 아이디에 입력되는 텍스트
         conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000', db='malatang',
                                charset='utf8')
+        # conn = pymysql.connect(host='localhost', port=3306, user='root', password='00000000', db='sy',
+        #                        charset='utf8')
         cursor = conn.cursor()
         cursor.execute(f"SELECT * FROM account_info WHERE account_id = '{id}'")
         check = cursor.fetchall()
@@ -141,6 +171,8 @@ class smartstore(QMainWindow,form_class):
         else:
             conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000', db='malatang',
                                    charset='utf8')
+            # conn = pymysql.connect(host='localhost', port=3306, user='root', password='00000000', db='sy',
+            #                        charset='utf8')
             cursor = conn.cursor()
             cursor.execute(
                 f"INSERT INTO account_info (account_name, account_id, account_pw) VALUES('{name}','{joinid}','{joinpw}')")
@@ -160,6 +192,8 @@ class smartstore(QMainWindow,form_class):
     def cslist(self):
         conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000', db='malatang',
                                charset='utf8')
+        # conn = pymysql.connect(host='localhost', port=3306, user='root', password='00000000', db='sy',
+        #                        charset='utf8')
         cursor = conn.cursor()
         cursor.execute(f"SELECT * FROM customerservice WHERE division = '고객'") # 구분이 고객인 정보만 불러온다
         self.cs = cursor.fetchall()
@@ -213,6 +247,8 @@ class smartstore(QMainWindow,form_class):
 
             conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000', db='malatang',
                                    charset='utf8')
+            # conn = pymysql.connect(host='localhost', port=3306, user='root', password='00000000', db='sy',
+            #                        charset='utf8')
             cursor = conn.cursor()
             cursor.execute(f"UPDATE customerservice SET answer='{self.answer}' WHERE order_code='{self.order_code}'")
             conn.commit()
@@ -220,10 +256,28 @@ class smartstore(QMainWindow,form_class):
             QMessageBox.information(self, '알림', '답변이 등록됐습니다.')
         except: pass
 
+    # --------------------------------------------------------------------
+    # def testqna(self):
+    #     self.th = thread_cs(self)
+    #     self.th.start()
 
-    def testqna(self):
-        self.th = thread_cs(self)
-        self.th.start()
+    def test_cstable(self):
+        conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000', db='malatang',
+                               charset='utf8')
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT * FROM customerservice ORDER BY RAND() LIMIT 1")
+        self.testcslist = cursor.fetchall()
+        self.cstable.setRowCount(len(self.testcslist))
+
+        Row = 0
+        for i in self.testcslist:
+            self.cstable.setItem(Row, 0, QTableWidgetItem(str(i[0])))  # 날짜
+            self.cstable.setItem(Row, 1, QTableWidgetItem(i[3]))  # 고객이름
+            self.cstable.setItem(Row, 2, QTableWidgetItem(i[4]))  # 주문번호
+            self.cstable.setItem(Row, 3, QTableWidgetItem(i[6]))  # 상품이름
+            self.cstable.setItem(Row, 4, QTableWidgetItem(i[7]))  # 문의내용
+            self.cstable.setItem(Row, 5, QTableWidgetItem(i[8]))  # 답변
+            Row += 1
 
     # --------------------------------------------------------------------
 
@@ -232,44 +286,47 @@ class thread_cs(threading.Thread):
         super().__init__()
         self.parent = parent
         print('1234')
+        self.testcslist = []
 
     def run(self):
         while True:
-            # if self.parent.quit or self.parent.test_th:
-            #     print('쓰레드 종료')
-            #     self.parent.qnalabel.setText('')
-            #     return
-            time.sleep(3)
+            if self.parent.end:
+                print('쓰레드 종료')
+                return
+            time.sleep(5)
             print('123456789')
-            # n = random.randint(1,10)
             conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000', db='malatang',
                                    charset='utf8')
             cursor = conn.cursor()
             cursor.execute(f"SELECT * FROM customerservice ORDER BY RAND() LIMIT 1")
-            self.parent.testcslist = cursor.fetchall()
-            print(self.parent.testcslist)
-            conn.close()
-            for i in range(len(self.parent.testcslist)):
-                print(self.parent.testcslist[i])
-            self.cstable.setRowCount(len(self.parent.testcslist))
-
-            Row = 0
-            for i in self.parent.testcslist:
-                self.cstable.setItem(Row, 0, QTableWidgetItem(str(i[0])))  # 날짜
-                self.cstable.setItem(Row, 1, QTableWidgetItem(i[3]))  # 고객이름
-                self.cstable.setItem(Row, 2, QTableWidgetItem(i[4]))  # 주문번호
-                self.cstable.setItem(Row, 3, QTableWidgetItem(i[6]))  # 상품이름
-                self.cstable.setItem(Row, 4, QTableWidgetItem(i[7]))  # 문의내용
-                self.cstable.setItem(Row, 5, QTableWidgetItem(i[8]))  # 답변
-                Row += 1
-            if self.parent.testcslist != None:
-                self.parent.qnalabel.setText(f'새로운 문의가 왔습니다')
-                self.parent.qnalabel.show()
+            testcslist = cursor.fetchall()
+            print(testcslist)
+            if testcslist != None:
+                self.parent.btn_qna.show()
+                self.parent.btn_qna.setText(f'새로운 문의가 들어왔습니다')
+                self.parent.btn_qna.clicked.connect(self.parent.move_testqna)
+                self.test_cstable()
                 time.sleep(5)
-            if self.parent.testcslist == None:
-                self.parent.qnalabel.hide()
+                # self.parent.btn_qna.hide()
+                self.testcslist.append(testcslist[0])
             conn.commit()
             conn.close()
+
+    def test_cstable(self):
+        # self.parent.cstable.clearContents()
+        self.parent.cstable.setRowCount(len(self.testcslist))
+
+        Row = 0
+        for i in self.testcslist:
+            self.parent.cstable.setItem(Row, 0, QTableWidgetItem(str(i[0])))  # 날짜
+            self.parent.cstable.setItem(Row, 1, QTableWidgetItem(i[3]))  # 고객이름
+            self.parent.cstable.setItem(Row, 2, QTableWidgetItem(i[4]))  # 주문번호
+            self.parent.cstable.setItem(Row, 3, QTableWidgetItem(i[6]))  # 상품이름
+            self.parent.cstable.setItem(Row, 4, QTableWidgetItem(i[7]))  # 문의내용
+            self.parent.cstable.setItem(Row, 5, QTableWidgetItem(i[8]))  # 답변
+            Row += 1
+
+
 
 
 if __name__ == "__main__":
