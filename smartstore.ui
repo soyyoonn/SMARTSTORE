@@ -20,13 +20,13 @@
    <property name="geometry">
     <rect>
      <x>0</x>
-     <y>0</y>
+     <y>60</y>
      <width>1061</width>
-     <height>831</height>
+     <height>791</height>
     </rect>
    </property>
    <property name="currentIndex">
-    <number>5</number>
+    <number>3</number>
    </property>
    <widget class="QWidget" name="page_2">
     <widget class="QPushButton" name="btn_login">
@@ -81,48 +81,18 @@
       <string>상품등록</string>
      </property>
     </widget>
-    <widget class="QStackedWidget" name="stackedWidget_2">
+    <widget class="QPushButton" name="btn_test">
      <property name="geometry">
       <rect>
-       <x>800</x>
-       <y>20</y>
-       <width>121</width>
-       <height>51</height>
+       <x>820</x>
+       <y>30</y>
+       <width>90</width>
+       <height>30</height>
       </rect>
      </property>
-     <property name="currentIndex">
-      <number>1</number>
+     <property name="text">
+      <string>test</string>
      </property>
-     <widget class="QWidget" name="page_7">
-      <widget class="QPushButton" name="btn_test">
-       <property name="geometry">
-        <rect>
-         <x>12</x>
-         <y>10</y>
-         <width>90</width>
-         <height>30</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>test</string>
-       </property>
-      </widget>
-     </widget>
-     <widget class="QWidget" name="page_8">
-      <widget class="QPushButton" name="btn_end">
-       <property name="geometry">
-        <rect>
-         <x>12</x>
-         <y>10</y>
-         <width>90</width>
-         <height>30</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>종료</string>
-       </property>
-      </widget>
-     </widget>
     </widget>
    </widget>
    <widget class="QWidget" name="page">
@@ -659,19 +629,6 @@
       </rect>
      </property>
     </widget>
-    <widget class="QPushButton" name="btn_check">
-     <property name="geometry">
-      <rect>
-       <x>880</x>
-       <y>770</y>
-       <width>75</width>
-       <height>23</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>확인</string>
-     </property>
-    </widget>
     <widget class="QPushButton" name="btn_home3">
      <property name="geometry">
       <rect>
@@ -725,7 +682,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>쓰레드</string>
+      <string/>
      </property>
     </widget>
     <widget class="QTableWidget" name="orderlist">
@@ -736,12 +693,6 @@
        <width>491</width>
        <height>321</height>
       </rect>
-     </property>
-     <property name="editTriggers">
-      <set>QAbstractItemView::NoEditTriggers</set>
-     </property>
-     <property name="selectionMode">
-      <enum>QAbstractItemView::SingleSelection</enum>
      </property>
      <property name="selectionBehavior">
       <enum>QAbstractItemView::SelectRows</enum>
@@ -796,15 +747,6 @@
        <width>256</width>
        <height>321</height>
       </rect>
-     </property>
-     <property name="editTriggers">
-      <set>QAbstractItemView::NoEditTriggers</set>
-     </property>
-     <property name="selectionMode">
-      <enum>QAbstractItemView::SingleSelection</enum>
-     </property>
-     <property name="selectionBehavior">
-      <enum>QAbstractItemView::SelectRows</enum>
      </property>
      <column>
       <property name="text">
@@ -1476,17 +1418,30 @@
     </widget>
    </widget>
   </widget>
-  <widget class="QPushButton" name="btn_qna">
+  <widget class="QLabel" name="qnalabel">
    <property name="geometry">
     <rect>
-     <x>740</x>
-     <y>862</y>
-     <width>271</width>
-     <height>111</height>
+     <x>720</x>
+     <y>861</y>
+     <width>281</width>
+     <height>101</height>
     </rect>
    </property>
    <property name="text">
-    <string>문의 알림</string>
+    <string>TextLabel</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="orderAlarm_label">
+   <property name="geometry">
+    <rect>
+     <x>840</x>
+     <y>20</y>
+     <width>201</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
    </property>
   </widget>
  </widget>
