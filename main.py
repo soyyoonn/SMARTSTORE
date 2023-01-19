@@ -20,7 +20,7 @@ rc('font', family=font)
 
 # ---------------------------------- 송화 ----------------------------------
 class shortageAlarm(QThread):
-    # 매개변수로 스레드가 선언되는 클래스에서 inventory_renew_alarm(self)라고 하여 상위 클래스를 부모로 지정
+    # 매개변수로 스레드가 선언되는 클래스에서 shortageAlarm(self)라고 하여 상위 클래스를 부모로 지정
     def __init__(self, parent):
         super().__init__()
         self.parent = parent

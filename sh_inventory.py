@@ -17,8 +17,55 @@ font = font_manager.FontProperties(fname=font_path).get_name()
 # 폰트 설정
 rc('font', family=font)
 
+class Delivary(QThread):
+    def __init__(self, parent):
+        super().__init__()
+        self.parent = parent
+
+    def run(self):
+        item = self.parent.orderlist.selectedItems()
+        # MySQL에서 import 해오기
+        conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000',
+                               db='malatang')
+        a = conn.cursor()
+        # 레시피 테이블에서 상품명에 해당하는 재료, 수량(1인분) 가져움
+        sql2 = f"update order_info set order_state = '배송완료' where order_code = {(int(item[1].text()))}"
+
+        # 2초 뒤에 배송 완료로 바꿔주기
+        time.sleep(2)
+
+        a.execute(sql2)
+        conn.commit()
+        conn.close()
+        self.parent.showOrderlist()
+
+class orderRemind(QThread):
+    def __init__(self, parent):
+        super().__init__()
+        self.parent = parent
+
+    def run(self):
+        while True:
+            time.sleep(5)
+            # MySQL에서 import 해오기
+            conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000',
+                                   db='malatang')
+            a = conn.cursor()
+            sql = f"SELECT distinct account_name, order_code, order_state FROM order_info ORDER BY RAND() LIMIT 1"
+            a.execute(sql)
+            live_order = a.fetchall()
+            self.parent.list.append(live_order)
+            print(self.parent.list)
+            row = 0
+            self.parent.orderlist.setRowCount(len(self.parent.list))
+            for i in self.parent.list:
+                self.parent.orderlist.setItem(row, 0, QTableWidgetItem(str(i[0][0])))
+                self.parent.orderlist.setItem(row, 1, QTableWidgetItem(str(i[0][1])))  # type = int
+                self.parent.orderlist.setItem(row, 2, QTableWidgetItem(str(i[0][2])))
+                row += 1
+
 class shortageAlarm(QThread):
-    # 매개변수로 스레드가 선언되는 클래스에서 inventory_renew_alarm(self)라고 하여 상위 클래스를 부모로 지정
+    # 매개변수로 스레드가 선언되는 클래스에서 shortageAlarm(self)라고 하여 상위 클래스를 부모로 지정
     def __init__(self, parent):
         super().__init__()
         self.parent = parent
@@ -48,14 +95,21 @@ class shortageAlarm(QThread):
                     self.parent.thread_label.setText('')
 
 
+
 form_widget = uic.loadUiType('smartstore.ui')[0]
 class Search(QWidget, form_widget):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
+
+        self.list = []
+
         # 쓰레드
         self.ira = shortageAlarm(self)
         self.ira.start()
+        self.lo = orderRemind(self)
+        self.lo.start()
+
         # 페이지 이동
         self.stackedWidget.setCurrentIndex(0)
         self.btn_order.clicked.connect(self.goStock)  # 홈페이지 - 주문관리버튼
@@ -73,8 +127,9 @@ class Search(QWidget, form_widget):
         # self.comboboxSetting()
         # self.minusStock()
         # self.canMake()
-        self.showOrderlist()
+        # self.showOrderlist()
         # self.sendProduct()
+
 
     def goHome(self):
         self.stackedWidget.setCurrentIndex(0)
@@ -162,6 +217,9 @@ class Search(QWidget, form_widget):
             conn.commit()
             self.showOrderlist()
             self.minusStock()
+            # 쓰레드
+            self.testThread = Delivary(self)
+            self.testThread.start()
         else:
             QMessageBox.information(self, '알림', f'{list}의 재고가 부족합니다')
 
@@ -174,22 +232,20 @@ class Search(QWidget, form_widget):
             # 레시피 테이블에서 재료, 수량 가져움       (↓주문수)
             sql = f"SELECT material_name, amount*{int(self.bill_info[j][1])} FROM recipe where product_name = '{self.bill_info[j][0]}'"
             a.execute(sql)
-            outofstock = a.fetchall()   # 소진된 재고량 ((재료명, 수량*3))
+            outofstock = a.fetchall()   # 소진된 재고량 ((재료명, 수량*주문수))
             # 인벤토리 테이블에 주문량 만큼 재고 차감
             for i in range(len(outofstock)):
                 # 재료의 남아 있는 양 불러옴
                 sql1 = f"SELECT total_amount FROM inventory where material_name = '{outofstock[i][0]}'" # 재료명
                 a.execute(sql1)
                 stock_info = a.fetchall()   # 현재 재고량
-                print("@@@@@",stock_info)
                 # 남은 재고량 = 현재 재고량 - 사용량
-                remain_stock = int(stock_info[i][0]) - int(outofstock[i][1])
-                print(remain_stock)
+                remain_stock = int(stock_info[0][0]) - int(outofstock[i][1])
                 # 남은 재고량으로 업데이트
                 sql2 = f"update inventory set total_amount = {remain_stock} where material_name = '{outofstock[i][0]}'"
                 a.execute(sql2)
                 conn.commit()
-        self.showstock_table()
+        self.showStock_table()
 
     def canMake(self):
         # MySQL에서 import 해오기
@@ -239,7 +295,6 @@ class Search(QWidget, form_widget):
         sql1 = f"SELECT product_name, product_quantity FROM order_info where order_code = {int(item[1].text())}"
         a.execute(sql1)
         self.bill_info = a.fetchall()
-        print(self.bill_info)
         row1 = 0
         self.bill_tableWidget.setRowCount(len(self.bill_info))
         for i in self.bill_info:
