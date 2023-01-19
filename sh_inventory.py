@@ -17,6 +17,20 @@ font = font_manager.FontProperties(fname=font_path).get_name()
 # 폰트 설정
 rc('font', family=font)
 
+class orderAlarm(QThread):
+    def __init__(self, parent):
+        super().__init__()
+        self.parent = parent
+
+    def run(self):
+        while True:
+            time.sleep(5)
+            if self.parent.stackedWidget.currentIndex() == 3:
+                self.parent.orderAlarm_label.setText('')
+            elif self.parent.stackedWidget.currentIndex() != 3:
+                print(self.parent.stackedWidget.currentIndex())
+                self.parent.orderAlarm_label.setText('주문이 들어왔습니다')
+
 class Delivary(QThread):
     def __init__(self, parent):
         super().__init__()
@@ -47,15 +61,16 @@ class orderRemind(QThread):
     def run(self):
         while True:
             time.sleep(5)
+            # self.parent.orderAlarm_label.setText('주문이 들어왔습니다')
+
             # MySQL에서 import 해오기
             conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000',
                                    db='malatang')
             a = conn.cursor()
-            sql = f"SELECT distinct account_name, order_code, order_state FROM order_info ORDER BY RAND() LIMIT 1"
+            sql = f"SELECT distinct account_name, order_code, order_state FROM order_info where order_state = '준비중' ORDER BY RAND() LIMIT 1"
             a.execute(sql)
             live_order = a.fetchall()
             self.parent.list.append(live_order)
-            print(self.parent.list)
             row = 0
             self.parent.orderlist.setRowCount(len(self.parent.list))
             for i in self.parent.list:
@@ -78,21 +93,22 @@ class shortageAlarm(QThread):
             conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000',
                                    db='malatang')
             a = conn.cursor()
-            # 레시피 테이블에서 상품명에 해당하는 재료, 수량(1인분) 가져움
-            sql = f"SELECT material_name, amount FROM recipe where product_name = '마라탕'"  # 주문 받은 상품명 넣을 예정
-            a.execute(sql)
-            amount_1 = a.fetchall()  # 1인분 ((재료명, 수량))
             list = []  # 빈 리스트 생성, 만들 수 있는 양 넣어줄 예정
-            for i in range(len(amount_1)):
-                sql1 = f"SELECT total_amount FROM inventory where material_name = '{amount_1[i][0]}'"  # 재료명
-                a.execute(sql1)
-                stock_info = a.fetchall()   # ((수량,),)
-                if int(stock_info[0][0]) < int(amount_1[i][1]):
-                    list.append(amount_1[i][0])
-                    self.parent.thread_label.setText(f"{list} 재고 부족")
-                    time.sleep(2)
-                else:
-                    self.parent.thread_label.setText('')
+            for j in range(len(self.parent.bill_info)):
+                # 레시피 테이블에서 상품명에 해당하는 재료, 수량(1인분) 가져움
+                sql = f"SELECT material_name, amount FROM recipe where product_name = '{self.parent.bill_info[j][0]}'"  # 주문 받은 상품명 넣을 예정
+                a.execute(sql)
+                amount_1 = a.fetchall()  # 1인분 ((재료명, 수량))
+                for i in range(len(amount_1)):
+                    sql1 = f"SELECT total_amount FROM inventory where material_name = '{amount_1[i][0]}'"  # 재료명
+                    a.execute(sql1)
+                    stock_info = a.fetchall()   # ((수량,),)
+                    if int(stock_info[0][0]) < int(amount_1[i][1]):
+                        list.append(amount_1[i][0])
+                        self.parent.thread_label.setText(f"{list} 재고 부족")
+                        time.sleep(2)
+                    else:
+                        self.parent.thread_label.setText('')
 
 
 
@@ -105,8 +121,9 @@ class Search(QWidget, form_widget):
         self.list = []
 
         # 쓰레드
-        self.ira = shortageAlarm(self)
-        self.ira.start()
+        self.oa = orderAlarm(self)
+        self.oa.start()
+
         self.lo = orderRemind(self)
         self.lo.start()
 
@@ -118,6 +135,7 @@ class Search(QWidget, form_widget):
         # 메서드 연결
         self.orderlist.cellClicked.connect(self.showProduct)
         self.btn_check2.clicked.connect(self.sendProduct)
+        # self.stackedWidget.currentChanged(int(3))   # 페이지 바뀌면 인덱스 번호 반환, 주문 알림시 필요
 
         # tableWidget 열 넓이 조정
         self.stock_tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -135,6 +153,10 @@ class Search(QWidget, form_widget):
         self.stackedWidget.setCurrentIndex(0)
     def goStock(self):
         self.stackedWidget.setCurrentIndex(3)
+
+    def pageIndex(self):
+        page = self.stackedWidget.currentIndex()
+        return page
 
 # 미사용중
     def comboboxSetting(self):
@@ -209,13 +231,12 @@ class Search(QWidget, form_widget):
                     list.append(amount_1[i][0])
                     cannot = 1
                     break
-
         if cannot == 0:
             QMessageBox.information(self, '알림', '발송 되었습니다')
             sql2= f"update order_info set order_state = '발송완료' where order_code = {(int(item[1].text()))}"
             a.execute(sql2)
             conn.commit()
-            self.showOrderlist()
+            # self.showOrderlist()
             self.minusStock()
             # 쓰레드
             self.testThread = Delivary(self)
@@ -301,6 +322,9 @@ class Search(QWidget, form_widget):
             self.bill_tableWidget.setItem(row1, 0, QTableWidgetItem(str(i[0])))
             self.bill_tableWidget.setItem(row1, 1, QTableWidgetItem(str(i[1])))  # type = int
             row1 += 1
+        # 쓰레드 시작
+        self.ira = shortageAlarm(self)
+        self.ira.start()
 
     def sendProduct(self):
         if not bool(self.bill_tableWidget.rowCount()):
@@ -320,7 +344,7 @@ if __name__ == "__main__":
 
     widget.addWidget(mainWindow)
 
-    widget.setFixedHeight(835)
-    widget.setFixedWidth(1059)
+    widget.setFixedHeight(831)
+    widget.setFixedWidth(1061)
     widget.show()
     app.exec_()
