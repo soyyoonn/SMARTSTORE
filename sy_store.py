@@ -24,12 +24,12 @@ class smartstore(QMainWindow,form_class):
         self.stackedWidget_2.setCurrentIndex(0)
         self.log_check = False   # 로그인 체크
         self.checkStatus = False  # 중복확인 체크
-        self.btn_home1.clicked.connect(self.move_main)   # 메인 페이지로 이동
+        self.btn_home1.clicked.connect(self.move_main)    # 메인 페이지로 이동
         self.btn_home2.clicked.connect(self.move_main)
         self.btn_home3.clicked.connect(self.move_main)
         self.btn_home4.clicked.connect(self.move_main)
         self.btn_home5.clicked.connect(self.move_main)
-        self.btn_login.clicked.connect(self.move_login)  # 로그인 페이지로 이동
+        self.btn_login.clicked.connect(self.move_login)   # 로그인 페이지로 이동
         self.signup_Button.clicked.connect(self.move_signup)  # 회원가입 페이지로 이동
         self.login_Button.clicked.connect(self.login)   # 로그인 버튼 클릭 후 login 메서드 실행
         self.btn_join.clicked.connect(self.join)        # 가입하기 버튼 클릭 후 join 메서드 실행
@@ -45,9 +45,9 @@ class smartstore(QMainWindow,form_class):
         self.btn_end.clicked.connect(self.end_test)
         self.btn_qna.clicked.connect(self.move_testqna)
         self.btn_qna.hide()
-        self.end = False
-        self.cs = thread_cs(self)
-        self.testcslist = []
+        self.end = False  # 스레드 종료 체크
+        self.csqna = thread_cs(self)
+        # self.testqnaservice = []
 
     # 메인 페이지로 이동
     def move_main(self):
@@ -79,19 +79,16 @@ class smartstore(QMainWindow,form_class):
         # elif self.log_check == True:
         self.stackedWidget.setCurrentIndex(5)
 
-    def move_testqna(self):
-        self.stackedWidget.setCurrentIndex(5)
-        self.test_cstable()
-        self.btn_qna.hide()
+    # def move_testqna(self):
+    #     self.stackedWidget.setCurrentIndex(5)
+    #     self.test_cstable()
+    #     self.btn_qna.hide()
 
 
     def start_test(self):
         self.stackedWidget_2.setCurrentIndex(1)
-        self.cs.start()
+        self.csqna.start()
 
-    # def testqna(self):
-    #     self.th = thread_cs(self)
-    #     self.th.start()
 
     def end_test(self):
         self.stackedWidget_2.setCurrentIndex(0)
@@ -260,27 +257,29 @@ class smartstore(QMainWindow,form_class):
         except: pass
 
     # --------------------------------------------------------------------
-    # def testqna(self):
-    #     self.th = thread_cs(self)
-    #     self.th.start()
 
-    def test_cstable(self):
-        conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000', db='malatang',
-                               charset='utf8')
-        cursor = conn.cursor()
-        cursor.execute(f"SELECT * FROM customerservice ORDER BY RAND() LIMIT 1")
-        self.testcslist = cursor.fetchall()
-        self.cstable.setRowCount(len(self.testcslist))
+    # def test_qnatable(self):
+    #     conn = pymysql.connect(host='10.10.21.102', port=3306, user='malatang', password='0000', db='malatang',
+    #                            charset='utf8')
+    #     cursor = conn.cursor()
+    #     cursor.execute(f"SELECT * FROM customerservice ORDER BY RAND() LIMIT 1")
+    #     self.testqnaservice = cursor.fetchall()
+    #     self.cstable.setRowCount(len(self.testqnaservice))
+    #
+    #     Row = 0
+    #     for i in self.testqnaservice:
+    #         self.cstable.setItem(Row, 0, QTableWidgetItem(str(i[0])))  # 날짜
+    #         self.cstable.setItem(Row, 1, QTableWidgetItem(i[3]))  # 고객이름
+    #         self.cstable.setItem(Row, 2, QTableWidgetItem(i[4]))  # 주문번호
+    #         self.cstable.setItem(Row, 3, QTableWidgetItem(i[6]))  # 상품이름
+    #         self.cstable.setItem(Row, 4, QTableWidgetItem(i[7]))  # 문의내용
+    #         self.cstable.setItem(Row, 5, QTableWidgetItem(i[8]))  # 답변
+    #         Row += 1
 
-        Row = 0
-        for i in self.testcslist:
-            self.cstable.setItem(Row, 0, QTableWidgetItem(str(i[0])))  # 날짜
-            self.cstable.setItem(Row, 1, QTableWidgetItem(i[3]))  # 고객이름
-            self.cstable.setItem(Row, 2, QTableWidgetItem(i[4]))  # 주문번호
-            self.cstable.setItem(Row, 3, QTableWidgetItem(i[6]))  # 상품이름
-            self.cstable.setItem(Row, 4, QTableWidgetItem(i[7]))  # 문의내용
-            self.cstable.setItem(Row, 5, QTableWidgetItem(i[8]))  # 답변
-            Row += 1
+    def move_testqna(self):
+        self.stackedWidget.setCurrentIndex(5)
+        self.test_cstable()
+        self.btn_qna.hide()
 
     # --------------------------------------------------------------------
 
@@ -290,9 +289,9 @@ class thread_cs(threading.Thread):
         self.parent = parent
         print('1234')
 
+
     def run(self):
         while True:
-            print(type(self.parent.testcslist))
             if self.parent.end:
                 print('쓰레드 종료')
                 return
@@ -302,26 +301,28 @@ class thread_cs(threading.Thread):
                                    charset='utf8')
             cursor = conn.cursor()
             cursor.execute(f"SELECT * FROM customerservice ORDER BY RAND() LIMIT 1")
-            testcslist = cursor.fetchall()
-            print(testcslist)
-            if testcslist != None:
+            self.testcslist = cursor.fetchall()
+            self.testcslist = []
+            print(type(self.testcslist))
+            print(self.testcslist)
+            if self.testcslist != None:
                 self.parent.btn_qna.show()
                 self.parent.btn_qna.setText(f'새로운 문의가 들어왔습니다')
                 self.parent.btn_qna.clicked.connect(self.parent.move_testqna)
                 self.test_cstable()
                 time.sleep(5)
-                print(list(testcslist[0]))
+                # print(list(testcslist[0]))
                 # self.parent.btn_qna.hide()
-                self.parent.testcslist.append(list(testcslist[0]))
+                self.testcslist.append(self.testcslist[0])
             conn.commit()
             conn.close()
 
     def test_cstable(self):
         # self.parent.cstable.clearContents()
-        self.parent.cstable.setRowCount(len(self.parent.testcslist))
+        self.parent.cstable.setRowCount(len(self.testcslist))
 
         Row = 0
-        for i in self.parent.testcslist:
+        for i in self.testcslist:
             self.parent.cstable.setItem(Row, 0, QTableWidgetItem(str(i[0])))  # 날짜
             self.parent.cstable.setItem(Row, 1, QTableWidgetItem(i[3]))  # 고객이름
             self.parent.cstable.setItem(Row, 2, QTableWidgetItem(i[4]))  # 주문번호
