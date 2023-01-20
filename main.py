@@ -115,35 +115,33 @@ class SmartStore(QMainWindow, form_class):
         super().__init__()
         self.setupUi(self)
         # ---------------------------------- 소윤 ----------------------------------
-        self.setupUi(self)
         self.stackedWidget.setCurrentIndex(0)
         self.stackedWidget_2.setCurrentIndex(1)
-        self.log_check = False  # 로그인 체크
+        self.log_check = False    # 로그인 체크
         self.checkStatus = False  # 중복확인 체크
-        self.btn_home1.clicked.connect(self.move_main)  # 메인 페이지로 이동
+        self.btn_home1.clicked.connect(self.move_main)   # 메인 페이지로 이동
         self.btn_home2.clicked.connect(self.move_main)
         self.btn_home3.clicked.connect(self.move_main)
         self.btn_home4.clicked.connect(self.move_main)
         self.btn_home5.clicked.connect(self.move_main)
-        self.btn_login.clicked.connect(self.move_login)  # 로그인 페이지로 이동
-        self.signup_Button.clicked.connect(self.move_signup)  # 회원가입 페이지로 이동
-        self.login_Button.clicked.connect(self.login)  # 로그인 버튼 클릭 후 login 메서드 실행
-        self.btn_join.clicked.connect(self.join)  # 가입하기 버튼 클릭 후 join 메서드 실행
-        self.btn_duplication.clicked.connect(self.double_Check)  # 중복확인 버튼 클릭 후 double_Check 메서드 실행
+        self.btn_login.clicked.connect(self.move_login)   # 로그인 페이지로 이동
+        self.signup_Button.clicked.connect(self.move_signup)   # 회원가입 페이지로 이동
+        self.login_Button.clicked.connect(self.login)    # 로그인 버튼 클릭 후 login 메서드 실행
+        self.btn_join.clicked.connect(self.join)         # 가입하기 버튼 클릭 후 join 메서드 실행
+        self.btn_duplication.clicked.connect(self.double_Check)   # 중복확인 버튼 클릭 후 double_Check 메서드 실행
         self.onlyInt = QIntValidator()
-        self.phone.setValidator(self.onlyInt)  # 연락처 값 숫자로만 입력받기
-        self.joinid.textChanged.connect(self.double_change)  # 중복체크 하고 아이디 바꿀 시 다시 중복체크 하기
+        self.phone.setValidator(self.onlyInt)    # 연락처 값 숫자로만 입력받기
+        self.joinid.textChanged.connect(self.double_change)    # 중복체크 하고 아이디 바꿀 시 다시 중복체크 하기
         self.cstable.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)  # 문의관리 테이블 위젯 헤더 조절
         self.btn_cs.clicked.connect(self.move_cs)  # 문의관리 페이지로 이동
         self.btn_check3.clicked.connect(self.cslist)  # 문의 내역을 보여준다
         self.btn_answer.clicked.connect(self.check_answer)  # 답변 등록 완료 실행
         self.btn_test.clicked.connect(self.start_test)  # 테스트 버튼 누르면 스레드 시작
-        self.btn_end.clicked.connect(self.end_test)  # 종료 버튼 누르면 스레드 종료
-        self.btn_qna.clicked.connect(self.move_testqna)  # 문의 알림 온 버튼 누르면 페이지 이동
+        self.btn_end.clicked.connect(self.end_test)    # 종료 버튼 누르면 스레드 종료
+        self.btn_qna.clicked.connect(self.move_testqna) # 문의 알림 온 버튼 누르면 페이지 이동
         self.btn_qna.hide()  # 처음 실행 시 문의 알림 버튼 안보이게
         self.end = False  # 스레드 종료 체크
         self.thr_cs = thread_cs(self)
-
         # 빈리스트 넣어주기
         self.testcslist = []
 
