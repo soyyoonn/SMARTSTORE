@@ -176,7 +176,6 @@ class SmartStore(QMainWindow, form_class):
         # ---------------------------------- 연수 ----------------------------------
         self.btn_product.clicked.connect(lambda method_moveProductWidget: self.stackedWidget.setCurrentIndex(4))  # 홈페이지 - 상품등록버튼
 
-        # ↓상품등록 UI 세팅
         # 테이블 위젯의 헤더 정렬(헤더별 맞추기)
         self.table_recipe.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.table_BoM.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -194,13 +193,13 @@ class SmartStore(QMainWindow, form_class):
         self.product_price.setValidator(self.onlyInt)
         self.product_sellingPrice.setValidator(self.onlyInt)
 
-        # 콤보박스에 상품이름 DB가져와서 모두 넣는 함수 실행
-        self.method_cbbProductSetting()
-
         # 콤보박스 선택하면 테이블 위젯에 BoM 보여주기
         self.cbb_productName.currentIndexChanged.connect(self.method_showBom)
 
-        # ↓상품등록
+        # 콤보박스에 상품이름 DB가져와서 모두 넣는 함수 실행
+        self.method_cbbProductSetting()
+
+        # ---------------------- 상품등록 시그널 ----------------------
         # 레시피의 전체 재료가 들어갈 리스트
         self.recipeMaterial = []
 
