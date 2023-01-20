@@ -452,6 +452,11 @@ class SmartStore(QMainWindow, form_class):
         self.stackedWidget.setCurrentIndex(0)
 
     def goStock(self):
+        if self.threadend == True:
+            self.orderlist.clearContents()
+            self.showOrderlist()
+        else:
+            pass
         self.stackedWidget.setCurrentIndex(3)
 
     def pageIndex(self):
