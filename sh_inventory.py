@@ -51,7 +51,7 @@ class Delivary(QThread):
         a.execute(sql2)
         conn.commit()
         conn.close()
-        self.parent.showOrderlist()
+        # self.parent.showOrderlist()
 
 class orderRemind(QThread):
     def __init__(self, parent):
@@ -60,6 +60,9 @@ class orderRemind(QThread):
 
     def run(self):
         while True:
+            if self.parent.threadend:
+                print('쓰레드 종료')
+                return
             time.sleep(5)
             # self.parent.orderAlarm_label.setText('주문이 들어왔습니다')
 
@@ -78,6 +81,7 @@ class orderRemind(QThread):
                 self.parent.orderlist.setItem(row, 1, QTableWidgetItem(str(i[0][1])))  # type = int
                 self.parent.orderlist.setItem(row, 2, QTableWidgetItem(str(i[0][2])))
                 row += 1
+            conn.close()
 
 class shortageAlarm(QThread):
     # 매개변수로 스레드가 선언되는 클래스에서 shortageAlarm(self)라고 하여 상위 클래스를 부모로 지정
@@ -119,13 +123,11 @@ class Search(QWidget, form_widget):
         self.setupUi(self)
 
         self.list = []
+        self.threadend = False  # 스레드 종료
 
         # 쓰레드
         self.oa = orderAlarm(self)
         self.oa.start()
-
-        self.lo = orderRemind(self)
-        self.lo.start()
 
         # 페이지 이동
         self.stackedWidget.setCurrentIndex(0)
@@ -135,28 +137,44 @@ class Search(QWidget, form_widget):
         # 메서드 연결
         self.orderlist.cellClicked.connect(self.showProduct)
         self.btn_check2.clicked.connect(self.sendProduct)
-        # self.stackedWidget.currentChanged(int(3))   # 페이지 바뀌면 인덱스 번호 반환, 주문 알림시 필요
+        self.btn_test2.clicked.connect(self.start_thread)
+        self.btn_end2.clicked.connect(self.end_thread)
+
 
         # tableWidget 열 넓이 조정
         self.stock_tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.orderlist.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         # 실험용
         self.showStock_table()
+        self.showOrderlist()
         # self.comboboxSetting()
         # self.minusStock()
         # self.canMake()
-        # self.showOrderlist()
         # self.sendProduct()
 
 
     def goHome(self):
         self.stackedWidget.setCurrentIndex(0)
+
     def goStock(self):
         self.stackedWidget.setCurrentIndex(3)
 
     def pageIndex(self):
         page = self.stackedWidget.currentIndex()
         return page
+
+    def start_thread(self):
+        # 종료 버튼으로 변경 된다
+        self.stackedWidget_3.setCurrentIndex(1)
+        # thread 시작
+        self.lo = orderRemind(self)
+        self.lo.start()
+        self.orderlist.clearContents()  # 페이지 넘어가기전 주문 테이블 클리어
+
+    def end_thread(self):
+        # 실시간 주문 버튼으로 변경됨
+        self.stackedWidget_3.setCurrentIndex(0)
+        self.threadend = True
 
 # 미사용중
     def comboboxSetting(self):

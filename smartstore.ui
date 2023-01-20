@@ -177,6 +177,67 @@
       </widget>
      </widget>
     </widget>
+    <widget class="QStackedWidget" name="stackedWidget_3">
+     <property name="geometry">
+      <rect>
+       <x>640</x>
+       <y>2</y>
+       <width>171</width>
+       <height>80</height>
+      </rect>
+     </property>
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="page_9">
+      <widget class="QPushButton" name="btn_test2">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>30</y>
+         <width>121</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton{
+	font: 15pt &quot;GyeonggiBatang&quot;;
+	color: rgb(82, 194, 105);
+	background-color: white;
+	border: 2px solid  rgb(82, 194, 105);
+	border-radius: 5px;
+}</string>
+       </property>
+       <property name="text">
+        <string>실시간 주문</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QWidget" name="page_10">
+      <widget class="QPushButton" name="btn_end2">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>31</y>
+         <width>121</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton{
+	font: 15pt &quot;GyeonggiBatang&quot;;
+	color: rgb(82, 194, 105);
+	background-color: white;
+	border: 2px solid  rgb(82, 194, 105);
+	border-radius: 5px;
+}</string>
+       </property>
+       <property name="text">
+        <string>종료</string>
+       </property>
+      </widget>
+     </widget>
+    </widget>
    </widget>
    <widget class="QWidget" name="page">
     <widget class="QPushButton" name="signup_Button">
